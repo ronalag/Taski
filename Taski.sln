@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "TaskiServer", "TaskiServer\TaskiServer.njsproj", "{B10E2893-E04B-49D6-8FB1-058D3218CDD6}"
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Tests", "Tests\Tests.njsproj", "{371F1230-F997-46FE-9DE9-F6853A778308}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B10E2893-E04B-49D6-8FB1-058D3218CDD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B10E2893-E04B-49D6-8FB1-058D3218CDD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B10E2893-E04B-49D6-8FB1-058D3218CDD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B10E2893-E04B-49D6-8FB1-058D3218CDD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{371F1230-F997-46FE-9DE9-F6853A778308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{371F1230-F997-46FE-9DE9-F6853A778308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{371F1230-F997-46FE-9DE9-F6853A778308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{371F1230-F997-46FE-9DE9-F6853A778308}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

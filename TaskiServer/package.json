@@ -1,0 +1,13 @@
+{
+  "name": "taski-server",
+  "version": "0.0.0",
+  "description": "TaskiServer",
+  "main": "app.js",
+  "author": {
+    "name": "henrya",
+    "email": ""
+  },
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
