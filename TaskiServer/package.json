@@ -8,6 +8,9 @@
     "email": ""
   },
   "dependencies": {
-    "express": "^4.13.4"
+    "body-parser": "^1.15.1",
+    "cors": "^2.7.1",
+    "express": "^4.13.4",
+    "node-mysql": "^0.4.2"
   }
 }
