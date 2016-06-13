@@ -1,10 +1,10 @@
 var mysql = require("mysql"),
     pool = mysql.createPool({
         "connectionLimit": 10,
-        "host": "localhost",
-        "user": "root",
-        "password": "mvemjtm9p",
-        "database": "Taski"
+        "host": "",
+        "user": "",
+        "password": "",
+        "database": ""
     }),
     utility = require("./utility");
 
