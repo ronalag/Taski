@@ -5,14 +5,21 @@
   "main": "app.js",
   "author": {
     "name": "henrya",
-    "email": ""
+    "email": "henry.aghaulor@gmail.com"
   },
   "dependencies": {
     "body-parser": "^1.15.1",
+    "bower": "^1.7.9",
     "cors": "^2.7.1",
     "express": "^4.13.4",
+    "express-session": "^1.14.0",
+    "jade": "^1.11.0",
     "mysql": "^2.11.1",
     "node-mysql": "^0.4.2",
+    "node-uuid": "^1.4.7",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "q": "^1.4.1",
     "url": "^0.11.0"
   }
 }

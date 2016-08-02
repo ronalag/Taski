@@ -1,0 +1,20 @@
+doctype
+html
+  head
+    script(type="text/javascript", src="public/js/jquery.js")
+    script(type="text/javascript", src="public/js/angular.js")
+    script(type="text/javascript", src="public/js/angular-route.js")
+    script(type="text/javascript", src="public/js/bootstrap.js")
+    script(type="text/javascript", src="public/js/ronalag.taski.model.taski.js")
+    link(rel="stylesheet", href="public/bootstrap/css/bootstrap.css")
+    link(rel="stylesheet", href="public/bootstrap/css/bootstrap-theme.css")
+    script(type="text/javascript", src="public/bootstrap/js/bootstrap.js")
+  body(data-ng-app="Taski")
+    .container-fluid
+      .row
+        .col-md-12
+          nav.navbar.navbar-default
+            .container-fluid
+              .navbar-header
+                .navbar-brand Taski
+        div(data-ng-view="")
