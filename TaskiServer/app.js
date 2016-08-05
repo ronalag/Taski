@@ -2,10 +2,8 @@
     app,
     cors = require("cors"),
     bodyParser = require("body-parser"),
-    express = require("express")//,
-    //login = require("./login"),
-    //user = require("./user")
-    ;
+    express = require("express"),
+    view = require("./routes/view");
 
 api = require("./routes/api");
 app = express();
@@ -18,15 +16,7 @@ app.use(bodyParser.urlencoded({ "extended": true }));
 
 app.use("/public", express.static("public"));
 app.use("/API", api);
-app.get("/home", function (req, res) {
-  res.render("home", {});
-});
-app.get("/login", function (req, res) {
-  res.render("login", {});
-});
-app.get("/", function (req, res) {
-  res.render("index", {});
-});
+app.use("/", view);
 
 app.listen(3000, function () {
 	console.log("Example app listening on port 3000!");
