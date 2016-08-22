@@ -1,12 +1,12 @@
 ﻿var express = require("express"),
     router = express.Router(),
-    sql = require("./../lib/sql");
+    sql = require("./../lib/sql")();
 
 router.post("/", function (req, res) {
     var data = req.body,
         password = data && data.password,
         username = data && data.username;
-        
+
     sql.getUsers(username, password, function (userError, users) {
         if (userError) {
             res.json(userError);

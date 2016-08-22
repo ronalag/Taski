@@ -1,17 +1,18 @@
-.col-md-6.col-md-offset-3
+.col-md-6.col-md-offset-3(ng-controller="login")
   .jumbotron
     h1 Taski
+    p.bg-danger(ng-hide="isValidPassword") Invalid username and/or password
     form
       .form-group
-        label(for="email") Email
-        input.form-control#email(type="email", placeholder="email")
+        label(for="username") Username
+        input.form-control#username(type="text", placeholder="username", ng-model="username")
       .form-group
         label(for="password") Password
-        input.form-control#password(type="password", placeholder="password")
+        input.form-control#password(type="password", placeholder="password", ng-model="password")
 
     .btn-group(role="group")
       span
-        a.btn.btn-primary.btn-lg(href="#", role="button") Login
+        a.btn.btn-primary.btn-lg( role="button" ng-click="login()") Login
 
     //
       .btn-toolbar(role="toolbar")

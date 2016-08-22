@@ -8,8 +8,11 @@
     "email": "henry.aghaulor@gmail.com"
   },
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.1",
     "bower": "^1.7.9",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.7.1",
     "express": "^4.13.4",
     "express-session": "^1.14.0",

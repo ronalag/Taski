@@ -1,14 +1,16 @@
-var mysql = require("mysql"),
+var config = require("./../config"),
+    mysql = require("mysql"),
     pool = mysql.createPool({
-        "connectionLimit": 10,
-        "host": "",
-        "user": "",
-        "password": "",
-        "database": ""
+        "connectionLimit": config && config.connectionLimit,
+        "host": config && config.host,
+        "user": config && config.user,
+        "password": config && config.password,
+        "database": config && config.database
     }),
     utility = require("./utility");
 
-module.exports = {
+module.exports = function () {
+  return {
     "createSession": function (username, callback) {
         var id;
 
@@ -24,7 +26,7 @@ module.exports = {
                     callback(error);
                     return;
                 }
-                
+
                 console.log(result);
                 callback(null, id);
             });
@@ -51,7 +53,7 @@ module.exports = {
             return;
         }
 
-        pool.query("SELECT * FROM user WHERE username = ? AND PASSWORD = ?", 
+        pool.query("SELECT * FROM user WHERE username = ? AND PASSWORD = ?",
             [username, password], function (error, results, fields) {
                 if (error) {
                     callback(error);
@@ -60,5 +62,23 @@ module.exports = {
 
                 callback(null, results);
             });
-    }
+    },
+    "getUserById": function (id, callback) {
+      if (!id) {
+        callback({"message":"Missing id"});
+        return;
+      }
+
+      pool.query("SELECT * FROM user WHERE id = ?",
+        [id], function (error, results, fields) {
+          if (error) {
+            callback(error);
+            return;
+          }
+
+          callback(null, results);
+        });
+    },
+    
+  };
 };

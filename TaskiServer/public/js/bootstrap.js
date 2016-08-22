@@ -19,6 +19,7 @@
   createNamespace(window, "ronalag.taski.model");
 })();
 
+/*
 $(document).ready(function () {
   $.ajax({
     "url": "/login"
@@ -26,5 +27,6 @@ $(document).ready(function () {
   .done(function (data) {
     console.log("success");
     console.log(data);
-  })
-})
+  });
+});
+*/
