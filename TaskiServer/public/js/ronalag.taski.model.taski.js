@@ -1,6 +1,8 @@
 (function () {
   var app = angular.module("Taski", ["ngRoute"]);
-  app.config(function ($routeProvider) {
+  app.config(function ($routeProvider, $locationProvider) {
+    //$locationProvider.html5Mode(true);
+
     $routeProvider
       .when("/", {
             "templateUrl": "/home"
@@ -49,5 +51,35 @@
 
     };
   });
+
+  app.run([
+  '$rootScope',
+  function($rootScope) {
+    var func = function (event, next, current) {
+      console.log(event);
+      console.log(next);
+      console.log(current);
+    };
+    // see what's going on when the route tries to change
+    $rootScope.$on("$routeChangeError", func);
+    $rootScope.$on("$routeChangeStart", func);
+    $rootScope.$on("$routeUpdate", func);
+
+    // /$rootScope.$on("$routeChangeError", func);
+    /*
+    $rootScope.$on('$routeChangeStart', function(event, next, current) {
+      // next is an object that is the route that we are starting to go to
+      // current is an object that is the route where we are currently
+      /*
+      var currentPath = current.originalPath;
+      var nextPath = next.originalPath;
+
+      console.log('Starting to leave %s to go to %s', currentPath, nextPath);
+
+      consol
+    });
+    */
+  }
+]);
   ronalag.taski.model.Taski = app;
 })();
