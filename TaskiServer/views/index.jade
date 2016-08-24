@@ -9,7 +9,7 @@ html
     link(rel="stylesheet", href="public/bootstrap/css/bootstrap.css")
     link(rel="stylesheet", href="public/bootstrap/css/bootstrap-theme.css")
     script(type="text/javascript", src="public/bootstrap/js/bootstrap.js")
-    base(href="/")
+    //base(href="/")
   body(data-ng-app="Taski")
     .container-fluid
       .row
@@ -17,5 +17,5 @@ html
           nav.navbar.navbar-default
             .container-fluid
               .navbar-header
-                .navbar-brand Taski
+                a(href="#/").navbar-brand Taski
         div(data-ng-view="")
