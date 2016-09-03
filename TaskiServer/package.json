@@ -22,6 +22,7 @@
     "node-uuid": "^1.4.7",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "passport-localapikey": "0.0.3",
     "q": "^1.4.1",
     "url": "^0.11.0"
   }

@@ -38,16 +38,37 @@
           }
         })
         .then(function (response) {
-
+          console.log(response);
         });
 
     };
   });
   app.controller("signup", function ($scope, $http) {
     $scope.signup = function () {
+      if (!$scope.username || !$scope.password ||
+            !$scope.repeatPassword || !$scope.firstName ||
+            !$scope.lastName || !$scope.email ||
+            $scope.password !== $scope.repeatPassword) {
+              return;
+      }
 
-    };
-  });
+      $http({
+          "method": "POST",
+          "url": "/API/Signup",
+          "data": {
+            "username": $scope.username,
+            "password": $scope.password,
+            "repeatPassword": $scope.repeatPassword,
+            "firstName": $scope.firstName,
+            "lastName": $scope.lastName,
+            "email": $scope.email
+          }
+        })
+        .then(function (response) {
+          console.log(response);
+        });
+      };
+    });
 
   app.run([
   '$rootScope',
@@ -58,9 +79,9 @@
       console.log(current);
     };
     // see what's going on when the route tries to change
-    $rootScope.$on("$routeChangeError", func);
-    $rootScope.$on("$routeChangeStart", func);
-    $rootScope.$on("$routeUpdate", func);
+    //$rootScope.$on("$routeChangeError", func);
+    //$rootScope.$on("$routeChangeStart", func);
+    //$rootScope.$on("$routeUpdate", func);
 
     // /$rootScope.$on("$routeChangeError", func);
     /*

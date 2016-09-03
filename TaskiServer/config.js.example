@@ -1,0 +1,9 @@
+module.exports = {
+  "connectionLimit": -1,
+  "host": "",
+  "database": "",
+  "username": "",
+  "password": "",
+  "port": -1,
+  "secret": ""
+}
