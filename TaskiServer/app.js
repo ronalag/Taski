@@ -1,13 +1,11 @@
 ﻿var api,
     app,
     config = require("./config"),
-    connectFlash = require("connect-flash"),
     cookieParser = require("cookie-parser"),
     cors = require("cors"),
     bodyParser = require("body-parser"),
     express = require("express"),
     port = process.argv[2] || 3000,
-    //passport = require("passport"),
     session = require("express-session"),
     view = require("./routes/view");
 
@@ -20,11 +18,7 @@ app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ "extended": false }));
-//app.use(passport.initialize());
-//app.use(passport.session());
-//app.use(connectFlash());
 
-//require("./config/passport")(passport);
 api = require("./routes/api")();
 
 app.use("/public", express.static("public"));

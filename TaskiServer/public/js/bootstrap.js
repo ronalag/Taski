@@ -17,6 +17,7 @@
     return
   };
   createNamespace(window, "ronalag.taski.model");
+  createNamespace(window, "ronalag.taski.context");
 })();
 
 /*

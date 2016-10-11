@@ -1,1 +1,14 @@
-﻿
+
+form.form-inline
+  .form-group
+    label(for="title")
+      title
+    input.form-group#title(type="text", placeholder="title")
+  .btn-group(role="group")
+    span
+      a.btn.btn-primary.btn-lg( role="button" ng-click="addTask()") Add Task
+
+(ng-repeat="task in tasks")
+  .panel.panel-default
+    .panel-body
+      {{task.title}}

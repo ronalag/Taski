@@ -22,6 +22,7 @@ module.exports = function (passport) {
     });
   });
 
+/*
   passport.use("local-signup", new LocalStrategy({
       "passReqToCallback": true
     },
@@ -78,6 +79,12 @@ module.exports = function (passport) {
 
             done(null, newUser);
         });
+      });
+    }));
+    */
+    passport.use(new LocalStrategy(function (apikey, done) {
+      process.nextTick(function () {
+
       });
     }));
 };
