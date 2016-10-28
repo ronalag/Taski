@@ -1,4 +1,19 @@
 module.exports = {
+    "cloneProperties": function (obj) {
+       var properties = obj && obj.properties,
+           object = obj && obj.object,
+           result = {};
+
+       if (!Array.isArray(properties)) {
+         return result;
+       }
+
+       properties.forEach(function (property) {
+         result[property] = obj.property;
+       });
+
+       return result;
+    },
     "createGuid": function() {
         var s4 = function() {
             return Math.floor((1 + Math.random()) * 0x10000)
@@ -13,7 +28,7 @@ module.exports = {
         var arr = typeof path === "string" && path.split("."),
             i,
             length = arr && arr.length;
-            
+
         if (!obj || !Array.isArray(arr)) {
             return undefined;
         }
@@ -23,5 +38,5 @@ module.exports = {
         }
 
         return obj;
-    }
+    },
 };

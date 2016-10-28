@@ -79,6 +79,49 @@ module.exports = {
                   });
               });
     },
+    "createTask": function (obj, callback) {
+      var id,
+          description = obj && obj.description || null,
+          dueDate = obj && obj.dueDate || null,
+          isAllDayEvent = obj && obj.isAllDayEvent || false,
+          isCompleted = obj && obj.isCompleted || false,
+          title = obj && obj.title || null,
+          username = obj && obj.username;          ;
+
+      if (!username) {
+        return callback(missingArguments);
+      }
+
+      id = uuid.v4();
+      pool.query("INSERT INTO tasks (id, username, title, description, " +
+        "dueDate, isAllDayEvent, isCompleted) VALUES (?,?,?,?,?,?,?)",
+        [
+          id,
+          username,
+          title,
+          description,
+          dueDate,
+          isAllDayEvent,
+          isCompleted
+        ], function (err, result) {
+          if (err) {
+            return callback(err);
+          }
+
+          if (!result || !result.affectedRows) {
+            return callback(result);
+          }
+
+          return callback(null, {
+              "id": id,
+              "username": username,
+              "description": description,
+              "dueDate": dueDate,
+              "isAllDayEvent": isAllDayEvent,
+              "isCompleted": isCompleted
+            });
+        });
+    },
     "createUser": function (obj, callback) {
       var email = obj && obj.email,
           id,
@@ -137,7 +180,18 @@ module.exports = {
             });
     },
     "getTasks": function (username, callback) {
+        if (!username) {
+            return callback(missingArguments);
+        }
 
+        pool.query("SELECT * FROM tasks WHERE username = ?", [username],
+            function (error, results, fields) {
+                if (error) {
+                    return callback(error);
+                }
+
+                return callback(null, results);
+            });
     },
     "getUser": function (username, callback) {
         if (!username) {
