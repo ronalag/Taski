@@ -1,14 +1,15 @@
+.col-md-12(ng-controller="tasks")
+  form.form-inline
+    .form-group
+      label(for="title") Title
+      input.form-control#title(type="text", placeholder="title")
+    button.btn.btn-group(type="submit", ng-click="add()") Add Task
 
-form.form-inline
-  .form-group
-    label(for="title")
-      title
-    input.form-group#title(type="text", placeholder="title")
-  .btn-group(role="group")
-    span
-      a.btn.btn-primary.btn-lg( role="button" ng-click="addTask()") Add Task
+    //.btn-group(role="group")
+    //  span
+    //    a.btn.btn-primary.btn-lg( role="button" ng-click="addTask()") Add Task
 
-(ng-repeat="task in tasks")
-  .panel.panel-default
-    .panel-body
-      {{task.title}}
+  div(ng-repeat="task in tasks")
+    .panel.panel-default
+      .panel-body
+        {{task.title}}

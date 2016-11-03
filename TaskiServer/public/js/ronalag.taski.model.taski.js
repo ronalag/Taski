@@ -93,17 +93,17 @@
           "sessionId": ronalag.taski.context.sessionId
         }
       })
-      .then(function (response) {
-
+      .success(function (response) {
+        console.log(response);
       });
 
     $scope.tasks = [];
 
-    $scope.createTask = function () {
+    $scope.create = function () {
 
     };
 
-    $scope.addTask = function () {
+    $scope.add = function () {
 
     };
   });
