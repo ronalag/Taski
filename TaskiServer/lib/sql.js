@@ -231,7 +231,7 @@ module.exports = {
           return callback(missingArguments);
         }
 
-        pool.query("SELECT * FROM user where sessionId = ?",
+        pool.query("SELECT * FROM session where sessionId = ?",
           [sessionId], function (error, results, fields) {
             if (error) {
               return callback(error);

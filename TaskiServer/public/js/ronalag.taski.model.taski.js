@@ -88,10 +88,7 @@
 
     $http({
         "method": "GET",
-        "url": "/API/tasks",
-        "data": {
-          "sessionId": ronalag.taski.context.sessionId
-        }
+        "url": "/API/tasks?sessionId=" + encodeURIComponent(ronalag.taski.context.sessionId)
       })
       .success(function (response) {
         console.log(response);

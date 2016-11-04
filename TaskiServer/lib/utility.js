@@ -4,12 +4,12 @@ module.exports = {
            object = obj && obj.object,
            result = {};
 
-       if (!Array.isArray(properties)) {
+       if (!Array.isArray(properties) || !object) {
          return result;
        }
 
        properties.forEach(function (property) {
-         result[property] = obj.property;
+         result[property] = obect.property;
        });
 
        return result;

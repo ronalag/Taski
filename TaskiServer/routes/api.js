@@ -5,7 +5,8 @@ module.exports = function (passport) {
         "error": "Missing Arguments!"
       },
       router = express.Router(),
-      sql = require("./../lib/sql");
+      sql = require("./../lib/sql"),
+      utility = require("./../lib/utility");
 
   router.get("/Account/:id", function (req, res) {
       var id = req.params.id;
@@ -37,7 +38,7 @@ module.exports = function (passport) {
         }
 
         isSessionFound = Array.isArray(sessions) &&
-          sessions.some(function (session) {            
+          sessions.some(function (session) {
             if (session.remoteIp === req.iq) {
               res.json(session);
               return true;
@@ -108,7 +109,39 @@ module.exports = function (passport) {
       });
     });
 
+    router.get("/Tasks", function (req, res) {
+        var query = req && req.query,
+            sessionId = query && query.sessionId;
+
+        if (!sessionId) {
+          return res.status(400).json(missingArguments);
+        }
+
+        sql.getUserBySessionId(sessionId, function (error, user) {
+          if (error) {
+            return res.status(400).json(error);
+          }
+
+          sql.getTasks(user && user.username, function (error, tasks) {
+              if (error) {
+                return res.status(400).json(error);
+              }
+
+              return res.json(tasks);
+          });
+        });
+    });
+
     router.post("/Task", function (req, res) {
+      var body = req && req.body,
+          description = body && body.description,
+          dueDate = body && body.dueDate,
+          isAllDayEvent = body && body.isAllDayEvent,
+          isCompleted = body && body.isCompleted,
+          title =  body && body.title,
+          username = body && body.username;
+
+
 
     });
 
