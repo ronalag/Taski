@@ -80,8 +80,7 @@ module.exports = {
               });
     },
     "createTask": function (obj, callback) {
-      var id,
-          description = obj && obj.description || null,
+      var description = obj && obj.description || null,
           dueDate = obj && obj.dueDate || null,
           isAllDayEvent = obj && obj.isAllDayEvent || false,
           isCompleted = obj && obj.isCompleted || false,
@@ -92,11 +91,9 @@ module.exports = {
         return callback(missingArguments);
       }
 
-      id = uuid.v4();
-      pool.query("INSERT INTO tasks (id, username, title, description, " +
-        "dueDate, isAllDayEvent, isCompleted) VALUES (?,?,?,?,?,?,?)",
+      pool.query("INSERT INTO tasks (username, title, description, " +
+        "dueDate, isAllDayEvent, isCompleted) VALUES (?,?,?,?,?,?)",
         [
-          id,
           username,
           title,
           description,
@@ -104,11 +101,13 @@ module.exports = {
           isAllDayEvent,
           isCompleted
         ], function (err, result) {
+          var id = result && result.insertId;
+
           if (err) {
             return callback(err);
           }
 
-          if (!result || !result.affectedRows) {
+          if (!result || !result.affectedRows || !id) {
             return callback(result);
           }
 

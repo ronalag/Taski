@@ -4,6 +4,9 @@ module.exports = function (passport) {
       missingArguments = {
         "error": "Missing Arguments!"
       },
+      missingSessionId = {
+        "error": "Missing Session ID!"
+      },
       router = express.Router(),
       sql = require("./../lib/sql"),
       utility = require("./../lib/utility");
@@ -114,7 +117,7 @@ module.exports = function (passport) {
             sessionId = query && query.sessionId;
 
         if (!sessionId) {
-          return res.status(400).json(missingArguments);
+          return res.status(400).json(missingSessionId);
         }
 
         sql.getUserBySessionId(sessionId, function (error, user) {
@@ -138,11 +141,42 @@ module.exports = function (passport) {
           dueDate = body && body.dueDate,
           isAllDayEvent = body && body.isAllDayEvent,
           isCompleted = body && body.isCompleted,
-          title =  body && body.title,
-          username = body && body.username;
+          query = req && req.query,
+          sessionId = query && query.sessionId,
+          title =  body && body.title;
 
+      if (!sessionId) {
+        return res.status(400).json(missingSessionId);
+      }
 
+      sql.getUserBySessionId(sessionId, function (error, user) {
+        var object;
 
+        if (error) {
+          return res.status(400).json(error);
+        }
+
+        object = utility.cloneProperties({
+          "object": body,
+          "properties": [
+            "description",
+            "dueDate",
+            "isAllDayEvent",
+            "isCompleted",
+            "title",
+            "username"
+          ]
+        });
+        object.username = user && user.username;
+
+        sql.createTask(object, function (error, task) {
+          if (error) {
+            return res.status(400).json(error);
+          }
+
+          return res.json(task);
+        });
+      });
     });
 
     return router;

@@ -20,7 +20,18 @@
       });
   });
 
+  app.controller("home", function ($scope, $location) {
+    var sessionData = sessionStorage &&
+      sessionStorage.getItem("sessionData") || null;
+
+    if (sessionData) {
+        ronalag.taski.context = JSON.parse(sessionData);
+        return $location.url("/tasks");
+    }
+  });
+
   app.controller("login", function ($scope, $http, $location) {
+
     $scope.isValidPassword = true;
 
     $scope.login = function () {
@@ -38,11 +49,15 @@
           }
         })
         .then(function (response) {
-          console.log(response);
+          var data = response && response.data;
 
-          if (!response || !response.data || !response.data.sessionId) {
+          if (!data || !response.data.sessionId) {
             console.log("Unknown error");
             return;
+          }
+
+          if (sessionStorage) {
+              sessionStorage.setItem("sessionData", JSON.stringify(data));
           }
 
           ronalag.taski.context = response.data;
@@ -84,30 +99,46 @@
       };
     });
 
-  app.controller("tasks", function ($scope, $http) {
+  app.controller("tasks", function ($scope, $http, $location) {
+    var sessionId = ronalag.taski.context.sessionId;
 
-    $http({
-        "method": "GET",
-        "url": "/API/tasks?sessionId=" + encodeURIComponent(ronalag.taski.context.sessionId)
-      })
-      .success(function (response) {
-        console.log(response);
-      });
+    if (sessionId) {
+      $http({
+          "method": "GET",
+          "url": "/API/tasks?sessionId=" + encodeURIComponent(sessionId)
+        })
+        .success(function (tasks) {
+          $scope.tasks = tasks;
+        });
+    } else {
+      return $location.url("/login");
+    }
 
     $scope.tasks = [];
 
     $scope.create = function () {
+      var title = $scope.title;
 
-    };
+      if (!title) {
+        return;
+      }
 
-    $scope.add = function () {
-
+      $http({
+          "method": "POST",
+          "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
+          "data": {
+            "title": title
+          }
+        })
+        .success(function (response) {
+          console.log(response);
+        });
     };
   });
 
   app.run([
   '$rootScope',
-  function($rootScope) {
+  function($rootScope, $location) {
     var func = function (event, next, current) {
       console.log(event);
       console.log(next);
@@ -115,7 +146,9 @@
     };
     // see what's going on when the route tries to change
     //$rootScope.$on("$routeChangeError", func);
-    //$rootScope.$on("$routeChangeStart", func);
+    $rootScope.$on("$routeChangeStart", function (event, next, current) {
+
+    });
     //$rootScope.$on("$routeUpdate", func);
 
     // /$rootScope.$on("$routeChangeError", func);

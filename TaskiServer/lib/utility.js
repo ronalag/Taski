@@ -9,7 +9,11 @@ module.exports = {
        }
 
        properties.forEach(function (property) {
-         result[property] = obect.property;
+         var value = object[property];
+
+         if (typeof value !== "undefined") {
+           result[property] = value;
+         }
        });
 
        return result;

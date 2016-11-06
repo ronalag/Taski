@@ -2,8 +2,8 @@
   form.form-inline
     .form-group
       label(for="title") Title
-      input.form-control#title(type="text", placeholder="title")
-    button.btn.btn-group(type="submit", ng-click="add()") Add Task
+      input.form-control#title(type="text", placeholder="title" ng-model="title")
+    button.btn.btn-group(type="submit", ng-click="create()") Add Task
 
     //.btn-group(role="group")
     //  span
