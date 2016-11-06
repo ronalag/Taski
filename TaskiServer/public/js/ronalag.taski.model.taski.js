@@ -1,5 +1,21 @@
 (function () {
-  var app = angular.module("Taski", ["ngRoute"]);
+  var app = angular.module("Taski", ["ngRoute"]),
+
+      setContext = function () {
+        var sessionData;
+
+        if (ronalag.taski.context.sessionId) {
+          return;
+        }
+
+        sessionData = sessionStorage &&
+           sessionStorage.getItem("sessionData") || null;
+
+        if (sessionData) {
+           ronalag.taski.context = JSON.parse(sessionData);
+        }
+      };
+
   app.config(function ($routeProvider, $locationProvider) {
     //$locationProvider.html5Mode(true);
 
@@ -21,13 +37,19 @@
   });
 
   app.controller("home", function ($scope, $location) {
+    setContext();
+
+    if (ronalag.taski.context.sessionId && $location) {
+      return $location.url("/tasks");
+    }
+    /*
     var sessionData = sessionStorage &&
       sessionStorage.getItem("sessionData") || null;
 
-    if (sessionData) {
+    if (sessionData && $location) {
         ronalag.taski.context = JSON.parse(sessionData);
         return $location.url("/tasks");
-    }
+    }*/
   });
 
   app.controller("login", function ($scope, $http, $location) {
@@ -100,7 +122,11 @@
     });
 
   app.controller("tasks", function ($scope, $http, $location) {
-    var sessionId = ronalag.taski.context.sessionId;
+    var sessionId;
+
+    setContext();
+
+    sessionId = ronalag.taski.context.sessionId;
 
     if (sessionId) {
       $http({
@@ -130,8 +156,9 @@
             "title": title
           }
         })
-        .success(function (response) {
-          console.log(response);
+        .success(function (task) {
+          $scope.tasks.push(task);
+          $scope.tasks = $scope.tasks;
         });
     };
   });
