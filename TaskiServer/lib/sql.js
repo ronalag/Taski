@@ -117,7 +117,8 @@ module.exports = {
               "description": description,
               "dueDate": dueDate,
               "isAllDayEvent": isAllDayEvent,
-              "isCompleted": isCompleted
+              "isCompleted": isCompleted,
+              "title": title
             });
         });
     },
