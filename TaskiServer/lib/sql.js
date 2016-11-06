@@ -35,7 +35,6 @@ module.exports = {
             return callback({"error": "Incorrect username and/or password!"});
           }
 
-          console.log(user.password);
           callback(null, bcrypt.compareSync(password, user.password));
           /*bcrypt.compare(password, user.password, callback); /*function (err, isValidPassword) {
               if (err) {
