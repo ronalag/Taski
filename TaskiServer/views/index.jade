@@ -13,8 +13,18 @@ html
     .container-fluid
       .row
         .col-md-12
-          nav.navbar.navbar-default
+          nav.navbar.navbar-default(ng-controller="navigation")
             .container-fluid
               .navbar-header
-                a(href="#/").navbar-brand Taski
+                a.navbar-brand(href="#/") Taski
+              ul.nav.navbar-nav.navbar-right
+                li.dropdown(ng-show="isUserMenuVisible")
+                  a.dropdown-toggle(href="#", data-toggle="dropdown", role="button", aria-haspopup="true", aria-expanded="false") 
+                    span.glyphicon.glyphicon-user
+                      span.caret
+                  ul.dropdown-menu
+                    li
+                      a(href="#") Sign out
+      .row
+        .col-md-12
         div(data-ng-view="")

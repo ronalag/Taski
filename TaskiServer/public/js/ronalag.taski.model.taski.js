@@ -16,6 +16,28 @@
         }
       };
 
+  app.service("sessionService", function() {
+    var callbackInfos = [];
+    return {
+      trigger: function (eventName) {
+        callbackInfos.forEach(function (callbackInfo){
+          if (callbackInfo.eventName === eventName &&
+                typeof callbackInfo.callback === "function") {
+            callbackInfo.callback(eventName);
+          }
+        });
+      },
+      register: function (eventName, callback) {
+        if (eventName && callback) {
+          callbackInfos.push({
+            "eventName": eventName,
+            "callback": callback
+          });
+        }
+      }
+    }
+  });
+
   app.config(function ($routeProvider, $locationProvider) {
     //$locationProvider.html5Mode(true);
 
@@ -89,6 +111,17 @@
     };
   });
 
+  app.controller("navigation", function ($scope, $http, $location, sessionService) {
+    setContext();
+
+    //$scope.isUserMenuVisible = ronalag.taski.context.sessionId ? true : false;
+
+    sessionService.register("isLoading", function (eventName) {
+      $scope.isUserMenuVisible = ronalag.taski.context.sessionId ? true : false;
+    });
+
+  });
+
   app.controller("signup", function ($scope, $http) {
     $scope.signup = function () {
       if (!$scope.username || !$scope.password ||
@@ -121,10 +154,11 @@
       };
     });
 
-  app.controller("tasks", function ($scope, $http, $location) {
+  app.controller("tasks", function ($scope, $http, $location, sessionService) {
     var sessionId;
 
     setContext();
+    sessionService.trigger("isLoading");
 
     sessionId = ronalag.taski.context.sessionId;
 

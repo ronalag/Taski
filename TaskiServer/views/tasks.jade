@@ -4,12 +4,5 @@
       label(for="title") Title
       input.form-control#title(type="text", placeholder="title" ng-model="title")
     button.btn.btn-group(type="submit", ng-click="create()") Add Task
-
-    //.btn-group(role="group")
-    //  span
-    //    a.btn.btn-primary.btn-lg( role="button" ng-click="addTask()") Add Task
-
-  div(ng-repeat="task in tasks")
-    .panel.panel-default
-      .panel-body
-        {{task.title}}
+  .list-group(style="margin-top: 18px;")
+    a.list-group-item(href="#", ng-repeat="task in tasks") {{task.title}}
