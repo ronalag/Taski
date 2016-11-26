@@ -164,6 +164,29 @@ module.exports = {
           console.log(error);
         }
     },
+    "deleteSession": function (sessionId, callback) {
+        if (!sessionId) {
+          return callback(missingArguments);
+        }
+
+        pool.query("DELETE FROM session where sessionId = ?", [sessionId],
+          function (error, results, fields) {
+            if (error) {
+              return callback(error);
+            }
+            var obj = {
+              results: results,
+              fields: fields
+            };
+            console.log(obj);
+
+            return callback(
+              null,
+              results && results.affectedRows && true || false
+            );
+          }
+        );
+    },
     "getSessions": function (username, callback) {
         if (!username) {
             return callback(missingArguments);

@@ -15,7 +15,30 @@ module.exports = function (passport) {
       var id = req.params.id;
   });
 
-  router.post("/Login", function (req, res) {
+  router.delete("/Session", function (req, res) {
+      var query = req && req.query,
+          sessionId = query && query.sessionId;
+
+      if (!sessionId) {
+        return res.status(500).json(missingSessionId);
+      }
+
+      sql.getUserBySessionId(sessionId, function (err, user) {
+        if (err) {
+          return res.status(500).json(err);
+        }
+
+        sql.deleteSession(sessionId, function (err, isDeleted) {
+            if (err) {
+              return res.status(500).json(err);
+            }
+
+            return res.json({"isDeleted": isDeleted});
+        });
+      });
+  });
+
+  router.post("/Session", function (req, res) {
     var body = req.body,
         password = body && body.password,
         username = body && body.username;
@@ -58,6 +81,23 @@ module.exports = function (passport) {
           });
         }
       });
+    });
+  });
+
+  router.get("/Session/isValid", function (req, res) {
+    var query = req && req.query,
+        sessionId = query && query.sessionId;
+
+    if (!sessionId) {
+      return res.status(500).json(missingSessionId);
+    }
+
+    sql.getUserBySessionId(sessionId, function (err, user) {
+      if (err) {
+        return res.status(500).json(err);
+      }
+
+      res.json({"isValid": user && user.username && true || false});
     });
   });
 
@@ -121,11 +161,17 @@ module.exports = function (passport) {
         }
 
         sql.getUserBySessionId(sessionId, function (error, user) {
+          var username = user && user.username;
+
           if (error) {
             return res.status(400).json(error);
           }
 
-          sql.getTasks(user && user.username, function (error, tasks) {
+          if (!username) {
+            return res.status(404).json({"error": "Invalid session!"});
+          }
+
+          sql.getTasks(username, function (error, tasks) {
               if (error) {
                 return res.status(400).json(error);
               }
@@ -153,7 +199,7 @@ module.exports = function (passport) {
         var object;
 
         if (error) {
-          return res.status(400).json(error);
+          return res.status(500).json(error);
         }
 
         object = utility.cloneProperties({
