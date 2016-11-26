@@ -6,8 +6,22 @@
     bodyParser = require("body-parser"),
     express = require("express"),
     port = process.argv[2] || 3000,
+    server,
     session = require("express-session"),
-    view = require("./routes/view");
+    view = require("./routes/view"),
+
+    gracefulShutdown = function () {
+      console.log("Received kill signal. Shutting down gracefully.");
+      server.close(function () {
+        console.log("Closed out remaining connections.");
+        process.exit();
+      });
+
+      setTimeout(function () {
+        console.log("Couldn't close out remaining connections. Forcefully exiting!");
+        process.exit();
+      }, 10*1000);
+    };
 
 app = express();
 
@@ -26,6 +40,9 @@ app.use("/public", express.static("public"));
 app.use("/API", api);
 app.use("/", view);
 
-app.listen(port, function () {
+server = app.listen(port, function () {
 	console.log("Example app listening on port " + port + "!");
 });
+
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
