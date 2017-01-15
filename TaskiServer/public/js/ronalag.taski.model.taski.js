@@ -1,59 +1,274 @@
 (function () {
-  var app = angular.module("Taski", ["ngRoute"]);
+  var app = angular.module("Taski", ["ngRoute"]),
+      promise,
 
-  app.service("sessionService", function() {
-    var callbackInfos = [];
-    return {
-      trigger: function (eventName) {
-        callbackInfos.forEach(function (callbackInfo){
-          if (callbackInfo.eventName === eventName &&
-                typeof callbackInfo.callback === "function") {
-            callbackInfo.callback(eventName);
+      resolvePath = function (obj, path) {
+        var array = typeof path === "string" && path.split(".") || null,
+            i,
+            length = array && array.length || 0;
+
+        for(i = 0; obj && i < length; i++) {
+          obj = obj[array[i]];
+        }
+
+        return obj;
+      };
+
+  app.service("sessionService", [
+    "$http",
+    "$location",
+    "$q",
+    function($http, $location, $q) {
+      var callbackInfos = [],
+          ignoreClicks = false,
+          that = {
+            isLoggedIn: false,
+            isValid: function (sessionId) {
+              var deferred = $q.defer();
+
+              if (sessionId) {
+                $http({
+                    "method": "GET",
+                    "url": "/API/Session/isValid?sessionId=" +
+                      encodeURIComponent(sessionId)
+                  })
+                  .then(function (response) {
+                      var isValid = response && response.data &&
+                            response.data.isValid || false;
+
+                      this.isLoggedIn = isValid,
+                      deferred.resolve(isValid);
+                    }, function (error) {
+                      console.log("Error checking whether session is valid");
+                      console.log(error);
+                      deferred.reject(error);
+                    });
+              } else {
+                deferred.reject("No session found!");
+              }
+
+              return deferred.promise;
+            },
+            login: function (param) {
+                var deferred = $q.defer(),
+                    password = param && param.password,
+                    promise = deferred.promise,
+                    username = param && param.username;
+
+                if (!username || !password) {
+                    deferred.reject("Missing arguments!");
+                    return promise;
+                }
+
+                $http({
+                    "method": "POST",
+                    "url": "/API/Session",
+                    "data": {
+                      "username": username,
+                      "password": password
+                    }
+                  })
+                  .then(function (response) {
+                    var data = response && response.data;
+
+                    if (!data || !data.sessionId) {
+                      deferred.reject("Unknown error");
+                      return;
+                    }
+
+                    if (window.sessionStorage) {
+                        sessionStorage.setItem(
+                          "sessionData",
+                          JSON.stringify(data)
+                        );
+                    }
+
+                    ronalag.taski.context = data;
+                    this.isLoggedIn = true;
+                    deferred.resolve(response);
+                  });
+
+              return promise;
+            },
+            logout: function () {
+              var deferred = $q.defer(),
+                  promise = deferred.promise,
+                  sessionId = ronalag.taski.context.sessionId;
+
+              if (!sessionId) {
+                deferred.reject("Missing arguments!");
+                return promise;
+              }
+
+              $http({
+                  "method": "DELETE",
+                  "url": "/API/session?sessionId=" +
+                    encodeURIComponent(sessionId),
+                })
+                .then(function (response) {
+                  var isDeleted = resolvePath(response, "data.isDeleted"),
+
+                      deleteContext = function () {
+
+                        ronalag.taski.context = null;
+                        this.isLoggedIn = !isDeleted;
+
+                        if (window.sessionStorage) {
+                          sessionStorage.removeItem("sessionData");
+                        }
+                      };
+
+                  console.log(response);
+
+                  if (!isDeleted) {
+                    this.isValid(sessionId)
+                      .then(function (isValid) {
+                        if (!isValid) {
+                          deleteContext();
+                        }
+                        deferred.resolve(!isValid);
+                      });
+                  } else {
+                    deleteContext();
+                    deferred.resolve(isDeleted);
+                  }
+
+                }.bind(this), function (error) {
+                }.bind(this));
+
+              return promise;
+            },
+            trigger: function (eventName) {
+              callbackInfos.forEach(function (callbackInfo){
+                if (callbackInfo.eventName === eventName &&
+                      typeof callbackInfo.callback === "function") {
+                  callbackInfo.callback(eventName);
+                }
+              });
+            },
+            register: function (eventName, callback) {
+              if (eventName && callback) {
+                callbackInfos.push({
+                  "eventName": eventName,
+                  "callback": callback
+                });
+              }
+            },
+            setSession: function (session) {
+              var deferred = $q.defer(),
+                  sessionData = window.sessionStorage &&
+                    sessionStorage.getItem("sessionData") || null,
+                  sessionId,
+                  sessionObject = sessionData && JSON.parse(sessionData);
+
+              sessionId = sessionObject && sessionObject.sessionId;
+
+              if (sessionId) {
+
+                $http({
+                    "method": "GET",
+                    "url": "/API/Session/isValid?sessionId=" +
+                      encodeURIComponent(sessionId)
+                  })
+                  .then(function (response) {
+                      var isValid = response && response.data &&
+                            response.data.isValid || false;
+
+                      if (!isValid) {
+                        wipeSessionData();
+                        return;
+                      }
+
+                      ronalag.taski.context = sessionObject;
+                      $rootScope.$emit("sessionValidated", {
+                        "error": null,
+                        "isValid": isValid
+                      });
+                      deferred.resolve(isValid);
+                    }, function (error) {
+                      console.log(error);
+                      wipeSessionData();
+                      $rootScope.$emit("sessionValidated", {
+                        "error": error,
+                        "isValid": false
+                      });
+                      deferred.reject(error);
+                    });
+              } else {
+                deferred.reject("No session found!");
+              }
+            }
+          },
+
+          setContext = function () {
+            var sessionData,
+                sessionId,
+                sessionObject;
+
+            if (!window.sessionStorage) {
+              return;
+            }
+
+            sessionData = sessionStorage.getItem("sessionData");
+            sessionObject = sessionData && JSON.parse(sessionData);
+            sessionId = sessionObject && sessionObject.sessionId;
+
+            if (!sessionId) {
+              return;
+            }
+
+            that.isValid(sessionId)
+              .then(function (isValid) {
+
+                ronalag.taski.context = isValid ? sessionObject : null;
+                that.isLoggedIn = isValid;
+
+                if (!isValid && $location.path() === "/tasks") {
+                  $location.url("/home");
+                }
+              }, function (error) {
+                ronalag.taski.context = null;
+              });
+          };
+
+      setContext();
+      return that;
+    }]);
+
+  app.service("taskService", [
+    "$http",
+    "$q",
+    function ($http, $q) {
+      var cache = {};
+
+      return {
+        getTasks: function (sessionId, callback) {
+          if (!sessionId) {
+            return callback("Missing session Id");
           }
-        });
-      },
-      register: function (eventName, callback) {
-        if (eventName && callback) {
-          callbackInfos.push({
-            "eventName": eventName,
-            "callback": callback
-          });
+
+          if (cache.tasks) {
+            return callback(null, cache.tasks);
+          }
+
+          $http({
+              "method": "GET",
+              "url": "/API/tasks?sessionId=" + encodeURIComponent(sessionId)
+            })
+            .success(function (tasks) {
+              cache.tasks = tasks;
+              return callback(null, tasks);
+            })
+            .error(function (error, status) {
+              console.log(error);
+              console.log(status);
+            });
+        },
+        reset: function () {
+          delete cache.tasks;
         }
-      }
-    }
-  });
-
-  app.service("taskService", function ($http) {
-    var cache = {};
-
-    return {
-      getTasks: function (sessionId, callback) {
-        if (!sessionId) {
-          return callback("Missing session Id");
-        }
-
-        if (cache.tasks) {
-          return callback(null, cache.tasks);
-        }
-
-        $http({
-            "method": "GET",
-            "url": "/API/tasks?sessionId=" + encodeURIComponent(sessionId)
-          })
-          .success(function (tasks) {
-            cache.tasks = tasks;
-            return callback(null, tasks);
-          })
-          .error(function (error, status) {
-            console.log(error);
-            console.log(status);
-          });
-      },
-      invalidate: function () {
-        delete cache.tasks;
-      }
-    };
-  });
+      };
+  }]);
 
   app.config(function ($routeProvider, $locationProvider) {
     //$locationProvider.html5Mode(true);
@@ -76,90 +291,76 @@
   });
 
   app.controller("home", function ($scope, $location) {
-    if (ronalag.taski.context.sessionId && $location) {
-      return $location.url("/tasks");
+    var sessionId = resolvePath(ronalag, "taski.context.sessionId");
+    if (sessionId && $location) {
+      $location.url("/tasks");
+      return;
     }
-    /*
-    var sessionData = sessionStorage &&
-      sessionStorage.getItem("sessionData") || null;
-
-    if (sessionData && $location) {
-        ronalag.taski.context = JSON.parse(sessionData);
-        return $location.url("/tasks");
-    }*/
   });
 
-  app.controller("login", function ($scope, $http, $location) {
+  app.controller("login", [
+    "$scope",
+    "$location",
+    "sessionService",
+    function ($scope, $location, sessionService) {
 
     $scope.isValidPassword = true;
 
     $scope.login = function () {
-      if (!$scope.username || !$scope.password) {
-          $scope.isValidPassword = false;
-          return;
-      }
 
-      $http({
-          "method": "POST",
-          "url": "/API/Session",
-          "data": {
-            "username": $scope.username,
-            "password": $scope.password
-          }
+      sessionService.login({
+          "username": $scope.username,
+          "password": $scope.password
         })
         .then(function (response) {
-          var data = response && response.data;
+          var sessionId = resolvePath (response, "data.sessionId");
 
-          if (!data || !response.data.sessionId) {
-            console.log("Unknown error");
+          if (!sessionId) {
             return;
           }
 
-          if (sessionStorage) {
-              sessionStorage.setItem("sessionData", JSON.stringify(data));
-          }
-
-          ronalag.taski.context = response.data;
           $location.url("/tasks");
-        });
-
-    };
-  });
-
-  app.controller("navigation", function ($scope, $http, $location, sessionService) {
-    sessionService.register("isLoading", function (eventName) {
-      $scope.isUserMenuVisible = ronalag.taski.context.sessionId ? true : false;
-    });
-
-    $scope.isUserMenuVisible = $scope.isUserMenuVisible || false;
-
-    $scope.logout = function () {
-      var sessionId = ronalag.taski.context.sessionId;
-
-      $http({
-          "method": "DELETE",
-          "url": "/API/session?sessionId=" + encodeURIComponent(sessionId),
-        })
-        .then(function (response) {
-          isLogingOut = false;
-          console.log(response);
-
-          if (!response || !response.data || !response.data.isDeleted) {
-            return;
-          }
-
-          delete ronalag.taski.context.sessionId;
-          delete ronalag.taski.context.username;
-
-          if (sessionStorage) {
-            sessionStorage.removeItem("sessionData");
-          }
-
-          $scope.isUserMenuVisible = false;
-          $location.url("/home");
+        }, function (error) {
+          console.log(error);
         });
     };
-  });
+  }]);
+
+  app.controller("navigation", [
+    "$rootScope",
+    "$scope",
+    "$http",
+    "$location",
+    "sessionService",
+    "taskService",
+    function (
+      $rootScope,
+      $scope,
+      $http,
+      $location,
+      sessionService,
+      taskService) {
+        $rootScope.$on("isLoading", function (e) {
+          var sessionId = resolvePath(ronalag, "taski.context.sessionId");
+
+          $scope.isUserMenuVisible = sessionService.isLoggedIn;
+        });
+
+        $scope.isUserMenuVisible = $scope.isUserMenuVisible || false;
+
+        $scope.logout = function () {
+          sessionService.logout()
+            .then(function (isDeleted) {
+              if (!isDeleted) {
+                return;
+              }
+
+              $scope.isUserMenuVisible = false;
+              taskService.reset();
+              $location.url("/home");
+            });
+        };
+  }]);
 
   app.controller("signup", function ($scope, $http) {
     $scope.signup = function () {
@@ -168,6 +369,7 @@
             !$scope.lastName || !$scope.email ||
             $scope.password !== $scope.repeatPassword) {
               return;
+            console.log($location);
       }
 
       $http({
@@ -183,7 +385,6 @@
           }
         })
         .then(function (response) {
-          //var sessionId = response && response.data && response.data.sessionId;
           ronalag.task.session = response && response.data || null;
           $locationProvider.path("tasks");
           console.log(response);
@@ -193,131 +394,96 @@
       };
     });
 
-  app.controller("tasks", function ($scope, $http, $location, sessionService, taskService) {
-    var sessionId;
-    sessionService.trigger("isLoading");
+  app.controller("tasks", [
+    "$rootScope",
+    "$scope",
+    "$http",
+    "$location",
+    "sessionService",
+    "taskService",
+    function ($rootScope, $scope, $http, $location, sessionService, taskService) {
+      var getTasks = function () {
+          var sessionId = ronalag.taski.context.sessionId;
 
-    sessionId = ronalag.taski.context.sessionId;
+          if (sessionId) {
+            taskService.getTasks(sessionId, function (error, tasks) {
+              if (error) {
+                console.log(error);
+                return;
+              }
 
-    if (sessionId) {
-      taskService.getTasks(sessionId, function (error, tasks) {
-        if (error) {
-          console.log(error);
+              $scope.tasks = tasks || [];
+            });
+          } else {
+            return $location.url("/login");
+          }
+        };
+      $rootScope.$emit("isLoading");
+
+      promise && promise.then(getTasks) || getTasks();
+
+      $scope.tasks = $scope.tasks || [];
+
+      $scope.create = function () {
+        var title = $scope.title;
+
+        if (!title) {
           return;
         }
 
-        $scope.tasks = tasks || [];
-      });
+        $http({
+            "method": "POST",
+            "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
 
-      /*
-      $http({
-          "method": "GET",
-          "url": "/API/tasks?sessionId=" + encodeURIComponent(sessionId)
-        })
-        .success(function (tasks) {
-          $scope.tasks = tasks;
-        })
-        .error(function (error, status) {
-          if (status === 404) {
-            sessionStorage.removeItem("sessionData");
-            delete ronalag.taski.context.sessionId;
-            delete ronalag.taski.context.username;
-            $location.url("/home");
-          }
-          console.log(error);
-          console.log(status);
-        });
-        */
-    } else {
-      return $location.url("/login");
-    }
-
-    $scope.tasks = $scope.tasks || [];
-
-    $scope.create = function () {
-      var title = $scope.title;
-
-      if (!title) {
-        return;
-      }
-
-      $http({
-          "method": "POST",
-          "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
-          "data": {
-            "title": title
-          }
-        })
-        .success(function (task) {
-          $scope.tasks.push(task);
-          $scope.tasks = $scope.tasks;
-        });
-    };
-  });
+            "data": {
+              "title": title
+            }
+          })
+          .success(function (task) {
+            $scope.tasks.push(task);
+            $scope.tasks = $scope.tasks;
+          });
+      };
+  }]);
 
   app.run([
-  '$rootScope',
-  '$location',
-  '$http',
-  function($rootScope, $location, $http) {
-    var func = function (event, next, current) {
-          console.log(event);
-          console.log(next);
-          console.log(current);
-        },
-        wipeSessionData = function () {
-          if (sessionData) {
-            sessionStorage.removeItem("sessionData");
-          }
-        };
+    '$rootScope',
+    '$location',
+    '$http',
+    "$q",
+    "sessionService",
+    function($rootScope, $location, $http, $q, sessionService) {
+      var func = function (event, next, current) {
+            /*
+            console.log(event);
+            console.log(next);
+            console.log(current);
+            */
+          };
 
-    var sessionData = sessionStorage &&
-          sessionStorage.getItem("sessionData") || null,
-        sessionId,
-        sessionObject = sessionData && JSON.parse(sessionData);
-
-    sessionId = sessionObject && sessionObject.sessionId;
-
-    if (sessionId) {
-      $http({
-          "method": "GET",
-          "url": "/API/Session/isValid?sessionId=" + encodeURIComponent(sessionId)
-        })
-        .then(function (response) {
-            var isValid = response && response.data && response.data.isValid;
-
-            if (!isValid) {
-              wipeSessionData();
-              return;
-            }
-
-            ronalag.taski.context = sessionObject;
-          }, function (error) {
-            console.log(error);
-            wipeSessionData();
-          });
-    }
     // see what's going on when the route tries to change
-    //$rootScope.$on("$routeChangeError", func);
+    $rootScope.$on("$routeChangeError", func);
     $rootScope.$on("$routeChangeStart", function (event, next, current) {
 
     });
-    //$rootScope.$on("$routeUpdate", func);
 
-    // /$rootScope.$on("$routeChangeError", func);
-    /*
+    $rootScope.$on("$routeChangeSuccess", function (e, current, pre) {
+
+    });
+    $rootScope.$on("$routeUpdate", func);
+
+    $rootScope.$on("$routeChangeError", func);
+
     $rootScope.$on('$routeChangeStart', function(event, next, current) {
       // next is an object that is the route that we are starting to go to
       // current is an object that is the route where we are currently
-      /*
-      var currentPath = current.originalPath;
-      var nextPath = next.originalPath;
+      var currentPath = current && current.originalPath || null;
+      var nextPath = next && next.originalPath || null;
 
       console.log('Starting to leave %s to go to %s', currentPath, nextPath);
 
-      consol
     });
-    */
+
   }
 ]);
   ronalag.taski.model.Taski = app;

@@ -29,15 +29,3 @@
   createNamespace(window, "ronalag.taski.context");
   //setContext();
 })();
-
-/*
-$(document).ready(function () {
-  $.ajax({
-    "url": "/login"
-  })
-  .done(function (data) {
-    console.log("success");
-    console.log(data);
-  });
-});
-*/
