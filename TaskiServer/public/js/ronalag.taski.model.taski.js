@@ -274,35 +274,42 @@
           delete cache.tasks;
         }
       };
-  }]);
+    }]);
 
-  app.config(function ($routeProvider, $locationProvider) {
-    //$locationProvider.html5Mode(true);
+  app.config([
+    "$locationProvider",
+    "$routeProvider",
+    function ($locationProvider, $routeProvider) {
+      //$locationProvider.html5Mode(true);
 
-    $routeProvider
-      .when("/login", {
-            "controller": "login",
-            "templateUrl": "/login"
-        })
-      .when("/signup", {
-            "controller": "signup",
-            "templateUrl": "/signup"
-        })
-      .when("/tasks", {
-            "templateUrl": "/tasks"
-        })
-      .otherwise({
-            "templateUrl": "/home"
-      });
-  });
+      $routeProvider
+        .when("/login", {
+              "controller": "login",
+              "templateUrl": "/login"
+          })
+        .when("/signup", {
+              "controller": "signup",
+              "templateUrl": "/signup"
+          })
+        .when("/tasks", {
+              "templateUrl": "/tasks"
+          })
+        .otherwise({
+              "templateUrl": "/home"
+          });
+    }]);
 
-  app.controller("home", function ($scope, $location) {
-    var sessionId = resolvePath(ronalag, "taski.context.sessionId");
-    if (sessionId && $location) {
-      $location.url("/tasks");
-      return;
-    }
-  });
+  app.controller("home", [
+    "$location",
+    "$scope",
+    function ($scope, $location) {
+      var sessionId = resolvePath(ronalag, "taski.context.sessionId");
+
+      if (sessionId && $location) {
+        $location.url("/tasks");
+        return;
+      }
+    }]);
 
   app.controller("login", [
     "$location",
@@ -311,45 +318,45 @@
     "sessionService",
     function ($location, $rootScope, $scope, sessionService) {
 
-    $scope.isValidPassword = true;
+      $scope.isValidPassword = true;
 
-    $scope.login = function () {
+      $scope.login = function () {
 
-      sessionService.login({
-          "username": $scope.username,
-          "password": $scope.password
-        })
-        .then(function (response) {
-          var sessionId = resolvePath (response, "data.sessionId");
+        sessionService.login({
+            "username": $scope.username,
+            "password": $scope.password
+          })
+          .then(function (response) {
+            var sessionId = resolvePath (response, "data.sessionId");
 
-          if (!sessionId) {
-            return;
-          }
+            if (!sessionId) {
+              return;
+            }
 
-          $rootScope.$emit("sessionValidated", {
-            "error": null,
-            "isValid": sessionId && true || false
+            $rootScope.$emit("sessionValidated", {
+              "error": null,
+              "isValid": sessionId && true || false
+            });
+
+            $location.url("/tasks");
+          }, function (error) {
+            console.log(error);
           });
-
-          $location.url("/tasks");
-        }, function (error) {
-          console.log(error);
-        });
-    };
-  }]);
+      };
+    }]);
 
   app.controller("navigation", [
-    "$rootScope",
-    "$scope",
     "$http",
     "$location",
+    "$rootScope",
+    "$scope",
     "sessionService",
     "taskService",
     function (
-      $rootScope,
-      $scope,
       $http,
       $location,
+      $rootScope,
+      $scope,
       sessionService,
       taskService) {
         $rootScope.$on("sessionValidated", function (e) {
@@ -371,39 +378,42 @@
               $location.url("/home");
             });
         };
-  }]);
+    }]);
 
-  app.controller("signup", function ($scope, $http) {
-    $scope.signup = function () {
-      if (!$scope.username || !$scope.password ||
-            !$scope.repeatPassword || !$scope.firstName ||
-            !$scope.lastName || !$scope.email ||
-            $scope.password !== $scope.repeatPassword) {
-              return;
-            console.log($location);
-      }
+  app.controller("signup",[
+    "$http",
+    "$scope",
+    function ($http, $scope) {
+      $scope.signup = function () {
+        if (!$scope.username || !$scope.password ||
+              !$scope.repeatPassword || !$scope.firstName ||
+              !$scope.lastName || !$scope.email ||
+              $scope.password !== $scope.repeatPassword) {
+                return;
+              console.log($location);
+        }
 
-      $http({
-          "method": "POST",
-          "url": "/API/Signup",
-          "data": {
-            "username": $scope.username,
-            "password": $scope.password,
-            "repeatPassword": $scope.repeatPassword,
-            "firstName": $scope.firstName,
-            "lastName": $scope.lastName,
-            "email": $scope.email
-          }
-        })
-        .then(function (response) {
-          ronalag.task.session = response && response.data || null;
-          $locationProvider.path("tasks");
-          console.log(response);
-        }, function (response) {
-          console.log(response);
-        });
+        $http({
+            "method": "POST",
+            "url": "/API/Signup",
+            "data": {
+              "username": $scope.username,
+              "password": $scope.password,
+              "repeatPassword": $scope.repeatPassword,
+              "firstName": $scope.firstName,
+              "lastName": $scope.lastName,
+              "email": $scope.email
+            }
+          })
+          .then(function (response) {
+            ronalag.task.session = response && response.data || null;
+            $locationProvider.path("tasks");
+            console.log(response);
+          }, function (response) {
+            console.log(response);
+          });
       };
-    });
+    }];
 
   app.controller("tasks", [
     "$rootScope",
@@ -412,50 +422,56 @@
     "$location",
     "sessionService",
     "taskService",
-    function ($rootScope, $scope, $http, $location, sessionService, taskService) {
-      var getTasks = function () {
-          var sessionId = ronalag.taski.context.sessionId;
+    function (
+      $rootScope,
+      $scope,
+      $http,
+      $location,
+      sessionService,
+      taskService) {
+        var getTasks = function () {
+            var sessionId = ronalag.taski.context.sessionId;
 
-          if (sessionId) {
-            taskService.getTasks(sessionId, function (error, tasks) {
-              if (error) {
-                console.log(error);
-                return;
-              }
+            if (sessionId) {
+              taskService.getTasks(sessionId, function (error, tasks) {
+                if (error) {
+                  console.log(error);
+                  return;
+                }
 
-              $scope.tasks = tasks || [];
-            });
-          } else {
-            return $location.url("/login");
-          }
-        };
-      $rootScope.$emit("isLoading");
-
-      promise && promise.then(getTasks) || getTasks();
-
-      $scope.tasks = $scope.tasks || [];
-
-      $scope.create = function () {
-        var title = $scope.title;
-
-        if (!title) {
-          return;
-        }
-
-        $http({
-            "method": "POST",
-            "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
-
-            "data": {
-              "title": title
+                $scope.tasks = tasks || [];
+              });
+            } else {
+              return $location.url("/login");
             }
-          })
-          .success(function (task) {
-            $scope.tasks.push(task);
-            $scope.tasks = $scope.tasks;
-          });
-      };
-  }]);
+          };
+        $rootScope.$emit("isLoading");
+
+        promise && promise.then(getTasks) || getTasks();
+
+        $scope.tasks = $scope.tasks || [];
+
+        $scope.create = function () {
+          var title = $scope.title;
+
+          if (!title) {
+            return;
+          }
+
+          $http({
+              "method": "POST",
+              "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
+
+              "data": {
+                "title": title
+              }
+            })
+            .success(function (task) {
+              $scope.tasks.push(task);
+              $scope.tasks = $scope.tasks;
+            });
+        };
+      }]);
 
   app.run([
     '$rootScope',
@@ -472,30 +488,30 @@
             */
           };
 
-    // see what's going on when the route tries to change
-    $rootScope.$on("$routeChangeError", func);
-    $rootScope.$on("$routeChangeStart", function (event, next, current) {
+      // see what's going on when the route tries to change
+      $rootScope.$on("$routeChangeError", func);
+      $rootScope.$on("$routeChangeStart", function (event, next, current) {
 
-    });
+      });
 
-    $rootScope.$on("$routeChangeSuccess", function (e, current, pre) {
+      $rootScope.$on("$routeChangeSuccess", function (e, current, pre) {
 
-    });
-    $rootScope.$on("$routeUpdate", func);
+      });
+      $rootScope.$on("$routeUpdate", func);
 
-    $rootScope.$on("$routeChangeError", func);
+      $rootScope.$on("$routeChangeError", func);
 
-    $rootScope.$on('$routeChangeStart', function(event, next, current) {
-      // next is an object that is the route that we are starting to go to
-      // current is an object that is the route where we are currently
-      var currentPath = current && current.originalPath || null;
-      var nextPath = next && next.originalPath || null;
+      $rootScope.$on('$routeChangeStart', function(event, next, current) {
+        // next is an object that is the route that we are starting to go to
+        // current is an object that is the route where we are currently
+        var currentPath = current && current.originalPath || null;
+        var nextPath = next && next.originalPath || null;
 
-      console.log('Starting to leave %s to go to %s', currentPath, nextPath);
+        console.log('Starting to leave %s to go to %s', currentPath, nextPath);
 
-    });
+      });
 
-  }
-]);
+  }]);
+
   ronalag.taski.model.Taski = app;
 })();
