@@ -18,7 +18,8 @@
     "$http",
     "$location",
     "$q",
-    function($http, $location, $q) {
+    "$rootScope",
+    function($http, $location, $q, $rootScope) {
       var callbackInfos = [],
           ignoreClicks = false,
           that = {
@@ -226,6 +227,11 @@
                 if (!isValid && $location.path() === "/tasks") {
                   $location.url("/home");
                 }
+
+                $rootScope.$emit("sessionValidated", {
+                  "error": null,
+                  "isValid": isValid
+                });
               }, function (error) {
                 ronalag.taski.context = null;
               });
@@ -299,10 +305,11 @@
   });
 
   app.controller("login", [
-    "$scope",
     "$location",
+    "$rootScope",
+    "$scope",
     "sessionService",
-    function ($scope, $location, sessionService) {
+    function ($location, $rootScope, $scope, sessionService) {
 
     $scope.isValidPassword = true;
 
@@ -318,6 +325,11 @@
           if (!sessionId) {
             return;
           }
+
+          $rootScope.$emit("sessionValidated", {
+            "error": null,
+            "isValid": sessionId && true || false
+          });
 
           $location.url("/tasks");
         }, function (error) {
@@ -340,13 +352,12 @@
       $location,
       sessionService,
       taskService) {
-        $rootScope.$on("isLoading", function (e) {
-          var sessionId = resolvePath(ronalag, "taski.context.sessionId");
+        $rootScope.$on("sessionValidated", function (e) {
 
           $scope.isUserMenuVisible = sessionService.isLoggedIn;
         });
 
-        $scope.isUserMenuVisible = $scope.isUserMenuVisible || false;
+        $scope.isUserMenuVisible = sessionService.isLoggedIn;
 
         $scope.logout = function () {
           sessionService.logout()
