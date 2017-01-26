@@ -5,4 +5,7 @@
       input.form-control#title(type="text", placeholder="title" ng-model="title")
     button.btn.btn-group(type="submit", ng-click="create()") Add Task
   .list-group(style="margin-top: 18px;")
-    a.list-group-item(href="#", ng-repeat="task in tasks") {{task.title}}
+    a.list-group-item(href="#modal", data-toggle="modal", ng-repeat="task in tasks") {{task.title}}
+  #modal.modal.hide.fade(tabindex="-1", role="dialog", aria-labelledby="mymodalLabel" aria-hidden="true")
+    div.modal-header
+      button.close(type="button", data-dismiss="modal", aria-hidden="true") x

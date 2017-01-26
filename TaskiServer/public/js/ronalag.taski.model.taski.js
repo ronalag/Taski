@@ -302,7 +302,7 @@
   app.controller("home", [
     "$location",
     "$scope",
-    function ($scope, $location) {
+    function ($location, $scope) {
       var sessionId = resolvePath(ronalag, "taski.context.sessionId");
 
       if (sessionId && $location) {
@@ -413,7 +413,7 @@
             console.log(response);
           });
       };
-    }];
+    }]);
 
   app.controller("tasks", [
     "$rootScope",
