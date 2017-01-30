@@ -5,14 +5,5 @@
       input.form-control#title(type="text", placeholder="title" ng-model="title")
     button.btn.btn-group(type="submit", ng-click="create()") Add Task
   .list-group(style="margin-top: 18px;")
-    a.list-group-item(href="#", data-target="#myModal", data-toggle="modal", ng-repeat="task in tasks") {{task.title}}
-  #myModal.modal.hide.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel" aria-hidden="true")
-    div.modal-header
-      button.close(type="button", data-dismiss="modal", aria-hidden="true") x
-      h3#myModalLabel Modal Header
-      .modal-body
-        p One fine body      
-      .modal-footer
-        button.btn(data-dismiss="modal", aria-hidden="true") Close
-        button.btn.btn-primary Save changes
+    a.list-group-item(href="#myModal", data-toggle="modal" ng-repeat="task in tasks") {{task.title}}
         
