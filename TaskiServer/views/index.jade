@@ -28,13 +28,15 @@ html
       .row
         .col-md-12
         div(data-ng-view="")
-    #myModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel" aria-hidden="true")
-      div.modal-header
-        button.close(type="button", data-dismiss="modal", aria-hidden="true") x
-        h3#myModalLabel Modal Header
-        .modal-body
-          p One fine body      
-        .modal-footer
-          button.btn(data-dismiss="modal", aria-hidden="true") Close
-          button.btn.btn-primary Save changes
+    #myModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel" aria-hidden="true", ng-controller="task")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            button.close(type="button", data-dismiss="modal", aria-hidden="true") x
+            h3#myModalLabel Modal Header
+            .modal-body
+              p One fine body      
+            .modal-footer
+              button.btn(data-dismiss="modal", aria-hidden="true") Close
+              button.btn.btn-primary Save changes
         

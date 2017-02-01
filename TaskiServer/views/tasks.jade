@@ -5,5 +5,4 @@
       input.form-control#title(type="text", placeholder="title" ng-model="title")
     button.btn.btn-group(type="submit", ng-click="create()") Add Task
   .list-group(style="margin-top: 18px;")
-    a.list-group-item(href="#myModal", data-toggle="modal" ng-repeat="task in tasks") {{task.title}}
-        
+    a.list-group-item(href="#myModal", ng-repeat="task in tasks", data-toggle="modal" ng-click="setCurrentTaskId(task.id)") {{task.title}}
