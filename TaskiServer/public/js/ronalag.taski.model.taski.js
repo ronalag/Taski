@@ -273,7 +273,9 @@
         reset: function () {
           delete cache.tasks;
         },
-        tasks: cache.tasks,
+        getCachedTasks: function () {
+          return cache.tasks;
+        },
         currentTaskId: null
       };
     }]);
@@ -418,13 +420,14 @@
     }]);
 
   app.controller("task", [
+    "$rootScope",
     "$scope",
     "taskService",
-    function ($scope, taskService) {
+    function ($rootScope, $scope, taskService) {
         var onShow = function () {
           var id = taskService.currentTaskId,
               task,
-              tasks = taskService.tasks;
+              tasks = taskService.getCachedTasks();
 
           id && tasks.some(function (tsk) {
             if (tsk.id === id) {
@@ -434,8 +437,18 @@
           });
 
           console.log(task);
-        };
+          if (!task) {
+            return;
+          }
 
+          $scope.title = task.title;
+          $scope.description = task.description || "";
+        };
+        $rootScope.$on("taskChanged", function (e) {
+          onShow();
+        });
+
+        $scope.isEditing = $scope.isEditing || false;
         onShow();
     }
   ]);
@@ -499,6 +512,7 @@
 
         $scope.setCurrentTaskId = function (id) {
           taskService.currentTaskId = id;
+          $rootScope.$emit("taskChanged");
         };
       }]);
 
