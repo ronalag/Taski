@@ -57,29 +57,26 @@ module.exports = function (passport) {
       }
 
       sql.getSessions(username, function (error, sessions) {
-        var isSessionFound;
+        var isSessionFound,
+            session = Array.isArray(sessions) && sessions[0];
 
         if (error) {
-          return res.status(500).json({"error": error});
+          res.status(500).json({"error": error});
+          return;
         }
 
-        isSessionFound = Array.isArray(sessions) &&
-          sessions.some(function (session) {
-            if (session.remoteIp === req.iq) {
-              res.json(session);
-              return true;
-            }
-          });
-
-        if (!isSessionFound) {
-          sql.createSession(username, function (error, session) {
-            if (error) {
-              return res.status(500).json({"error": error});
-            }
-
-            res.json(session);
-          });
+        if (session) {
+          res.json(session);
+          return;
         }
+
+        sql.createSession(username, function (error, session) {
+          if (error) {
+            return res.status(500).json({"error": error});
+          }
+
+          res.json(session);
+        });
       });
     });
   });
@@ -147,6 +144,10 @@ module.exports = function (passport) {
               return res.status(500).json({"error": err});
             }
 
+            if (newUser) {
+              delete newUser.password;
+            }
+            
             return res.json(newUser);
         });
       });

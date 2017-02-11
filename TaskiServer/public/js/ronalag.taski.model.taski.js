@@ -1,4 +1,5 @@
 (function () {
+  "use strict";
   var app = angular.module("Taski", ["ngRoute"]),
       promise,
 
@@ -37,7 +38,7 @@
                       var isValid = response && response.data &&
                             response.data.isValid || false;
 
-                      this.isLoggedIn = isValid,
+                      that.isLoggedIn = isValid,
                       deferred.resolve(isValid);
                     }, function (error) {
                       console.log("Error checking whether session is valid");
@@ -79,13 +80,13 @@
 
                     if (window.sessionStorage) {
                         sessionStorage.setItem(
-                          "sessionData",
+                          "sessionData", 
                           JSON.stringify(data)
                         );
                     }
 
                     ronalag.taski.context = data;
-                    this.isLoggedIn = true;
+                    that.isLoggedIn = true;
                     deferred.resolve(response);
                   });
 
@@ -117,9 +118,7 @@
                         if (window.sessionStorage) {
                           sessionStorage.removeItem("sessionData");
                         }
-                      };
-
-                  console.log(response);
+                      }.bind(this);
 
                   if (!isDeleted) {
                     this.isValid(sessionId)
@@ -386,15 +385,15 @@
 
   app.controller("signup",[
     "$http",
+    "$location",
     "$scope",
-    function ($http, $scope) {
+    function ($http, $location, $scope) {
       $scope.signup = function () {
         if (!$scope.username || !$scope.password ||
               !$scope.repeatPassword || !$scope.firstName ||
               !$scope.lastName || !$scope.email ||
               $scope.password !== $scope.repeatPassword) {
                 return;
-              console.log($location);
         }
 
         $http({
@@ -409,12 +408,11 @@
               "email": $scope.email
             }
           })
-          .then(function (response) {
-            ronalag.task.session = response && response.data || null;
-            $locationProvider.path("tasks");
-            console.log(response);
-          }, function (response) {
-            console.log(response);
+          .then(function (newUser) {
+            $location.path("login");
+            console.log(newUser);
+          }, function (error) {
+            console.log(error);
           });
       };
     }]);
@@ -436,7 +434,6 @@
             }
           });
 
-          console.log(task);
           if (!task) {
             return;
           }
@@ -490,7 +487,8 @@
         $scope.tasks = $scope.tasks || [];
 
         $scope.create = function () {
-          var title = $scope.title;
+          var sessionId = ronalag.taski.context.sessionId,
+              title = $scope.title;
 
           if (!title) {
             return;
@@ -499,7 +497,6 @@
           $http({
               "method": "POST",
               "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
-
               "data": {
                 "title": title
               }

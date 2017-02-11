@@ -35,22 +35,7 @@ module.exports = {
             return callback({"error": "Incorrect username and/or password!"});
           }
 
-          callback(null, bcrypt.compareSync(password, user.password));
-          /*bcrypt.compare(password, user.password, callback); /*function (err, isValidPassword) {
-              if (err) {
-                return callback(hashMessage);
-              }
-
-              pool.query("SELECT * FROM user WHERE username = ? AND " +
-                "password = ?", [username, hash], function (error, results) {
-
-                  if (error) {
-                    return callback(error);
-                  }
-
-                  callback(null, results && results.length > 0 || false);
-                });
-          });*/
+          bcrypt.compare(password, user.password, callback);
         });
     },
     "createSession": function (username, callback) {
@@ -61,22 +46,22 @@ module.exports = {
         }
 
         id = uuid.v4();
-        pool.query("INSERT INTO session (username, sessionId) " +
-            "VALUES (?,?)", [username,id],
-            function (error, result) {
-                  if (error) {
-                      return callback(error);
-                  }
+        pool.query("INSERT INTO session " +
+          "SELECT ? AS id, user.id AS userid FROM user WHERE username = ?",
+          [id,username], function (error, result) {
+              if (error) {
+                  return callback(error);
+              }
 
-                  if (!result || !result.affectedRows) {
-                      return callback(result);
-                  }
+              if (!result || !result.affectedRows) {
+                  return callback(result);
+              }
 
-                  return callback(null, {
-                    "username": username,
-                    "sessionId": id
-                  });
+              return callback(null, {
+                "username": username,
+                "sessionId": id
               });
+          });
     },
     "createTask": function (obj, callback) {
       var description = obj && obj.description || null,
@@ -90,15 +75,16 @@ module.exports = {
         return callback(missingArguments);
       }
 
-      pool.query("INSERT INTO tasks (username, title, description, " +
-        "dueDate, isAllDayEvent, isCompleted) VALUES (?,?,?,?,?,?)",
+      pool.query("INSERT INTO tasks (title, description, dueDate, " +
+        "isAllDayEvent, isCompleted, userid) VALUES (?,?,?,?,?," +
+         "(SELECT user.id from user where username = ?))",
         [
-          username,
           title,
           description,
           dueDate,
           isAllDayEvent,
-          isCompleted
+          isCompleted,
+          username
         ], function (err, result) {
           var id = result && result.insertId;
 
@@ -123,7 +109,6 @@ module.exports = {
     },
     "createUser": function (obj, callback) {
       var email = obj && obj.email,
-          id,
           firstName = obj && obj.firstName,
           lastName = obj && obj.lastName,
           password = obj && obj.password,
@@ -134,32 +119,45 @@ module.exports = {
         return callback(missingArguments);
       }
 
-      id = uuid.v4();
-
       try {
-          var hash = bcrypt.hashSync(password, bcrypt.genSaltSync(saltRounds));
-          pool.query("INSERT INTO user " +
-              "(username, firstName, lastName, email, id, password) " +
-              "VALUES (?,?,?,?,?,?)",
-              [username, firstName, lastName, email, id, hash],
-              function (err, result) {
-                if (err) {
-                  return callback(err);
-                }
+          bcrypt.genSalt(saltRounds, function (error, salt) {
+            if (error) {
+              callback(error);
+              return;
+            }
 
-                if (!result || !result.affectedRows) {
-                  return callback(result);
-                }
+            bcrypt.hash(password, salt, null, function (error, hash) {
+              if (error) {
+                callback(error);
+                return;
+              }
 
-                return callback(null, {
-                    "username": username,
-                    "firstName": firstName,
-                    "lastName": lastName,
-                    "email": email,
-                    "id": id,
-                    "hash": hash
+              pool.query("INSERT INTO user " +
+                  "(username, firstName, lastName, email, password) " +
+                  "VALUES (?,?,?,?,?)",
+                  [username, firstName, lastName, email, hash],
+                  function (err, result) {
+                    var id = result && result.insertId;
+
+                    if (err) {
+                      return callback(err);
+                    }
+
+                    if (!result || !result.affectedRows || !id) {
+                      return callback(result);
+                    }
+
+                    return callback(null, {
+                        "username": username,
+                        "firstName": firstName,
+                        "lastName": lastName,
+                        "email": email,
+                        "id": id,
+                        "password": hash
+                      });
                   });
-              });
+            });
+          });
         } catch (error) {
           console.log(error);
         }
@@ -169,7 +167,7 @@ module.exports = {
           return callback(missingArguments);
         }
 
-        pool.query("DELETE FROM session where sessionId = ?", [sessionId],
+        pool.query("DELETE FROM session where id = ?", [sessionId],
           function (error, results, fields) {
             if (error) {
               return callback(error);
@@ -192,7 +190,8 @@ module.exports = {
             return callback(missingArguments);
         }
 
-        pool.query("SELECT * FROM session WHERE username = ?", [username],
+        pool.query("SELECT username, session.id AS sessionId FROM `session` INNER JOIN `user` " +
+        "ON session.userid = user.id WHERE username = ?", [username],
             function (error, results, fields) {
                 if (error) {
                     return callback(error);
@@ -206,14 +205,20 @@ module.exports = {
             return callback(missingArguments);
         }
 
-        pool.query("SELECT * FROM tasks WHERE username = ?", [username],
-            function (error, results, fields) {
+        try {
+        pool.query("SELECT * FROM tasks WHERE EXISTS " +
+          "(SELECT * FROM user WHERE user.username = ? " +
+          "AND tasks.userid = user.id)",
+          [username], function (error, results, fields) {
                 if (error) {
                     return callback(error);
                 }
 
                 return callback(null, results);
             });
+          } catch (err) {
+              console.log(err);
+          }
     },
     "getUser": function (username, callback) {
         if (!username) {
@@ -234,27 +239,15 @@ module.exports = {
             console.log(err);
           }
     },
-    "getUserById": function (id, callback) {
-      if (!id) {
-        return callback(missingArguments);
-      }
-
-      pool.query("SELECT * FROM user WHERE id = ?",
-        [id], function (error, results, fields) {
-          if (error) {
-            return callback(error);
-          }
-
-          callback(null, results && results[0]);
-        });
-    },
     "getUserBySessionId": function (sessionId, callback) {
         if (!sessionId) {
           return callback(missingArguments);
         }
 
-        pool.query("SELECT * FROM session where sessionId = ?",
-          [sessionId], function (error, results, fields) {
+        pool.query("SELECT * FROM `user` WHERE EXISTS " +
+          "(SELECT * FROM `session` WHERE session.id = ? "+
+          "AND user.id = userid)", [sessionId],
+          function (error, results, fields) {
             if (error) {
               return callback(error);
             }

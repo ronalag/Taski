@@ -46,3 +46,4 @@ server = app.listen(port, function () {
 
 process.on("SIGTERM", gracefulShutdown);
 process.on("SIGINT", gracefulShutdown);
+process.on("uncaughtException", gracefulShutdown);
