@@ -75,7 +75,7 @@ module.exports = {
         return callback(missingArguments);
       }
 
-      pool.query("INSERT INTO tasks (title, description, dueDate, " +
+      pool.query("INSERT INTO task (title, description, dueDate, " +
         "isAllDayEvent, isCompleted, userid) VALUES (?,?,?,?,?," +
          "(SELECT user.id from user where username = ?))",
         [
@@ -206,9 +206,9 @@ module.exports = {
         }
 
         try {
-        pool.query("SELECT * FROM tasks WHERE EXISTS " +
+        pool.query("SELECT * FROM task WHERE EXISTS " +
           "(SELECT * FROM user WHERE user.username = ? " +
-          "AND tasks.userid = user.id)",
+          "AND task.userid = user.id)",
           [username], function (error, results, fields) {
                 if (error) {
                     return callback(error);
