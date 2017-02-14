@@ -5,14 +5,14 @@ var bcrypt = require("bcrypt-nodejs"),
     },
     missingArguments = {
       "error": "Missing arguments!"
-    }
+    },
     mysql = require("mysql"),
     pool = mysql.createPool({
         "connectionLimit": config && config.connectionLimit,
         "host": config && config.host,
         "user": config && config.username,
         "password": config && config.password,
-        "port": 3306,
+        "port": config && config.port,
         "database": config && config.database
     }),
     saltRounds = config && config.saltRounds || 10,
