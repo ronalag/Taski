@@ -514,6 +514,8 @@
         });
 
         $scope.isEditing = $scope.isEditing || false;
+
+        $scope.isEditingTitle = $scope.isEditingTitle || false;
         onShow();
 
         $scope.update = function () {
@@ -542,7 +544,7 @@
           .then(function (response) {
             var isUpdated = utilityService.resolvePath(
               response,
-              "data.isUpdated"
+              "data.isUpdated "
             );
 
             if (isUpdated) {
@@ -553,6 +555,21 @@
           }, function (error) {
             console.log(error);
           })
+        };
+
+        $scope.saveNewTitle = function () {
+          $scope.isEditingTitle = false;
+          $scope.title = $scope.newTitle;
+          $scope.update();
+        }
+
+        $scope.setOldTitle = function () {
+          $scope.isEditingTitle = false;
+        };
+
+        $scope.startEditingTitle = function () {
+          $scope.isEditingTitle = true;
+          $scope.newTitle = $scope.title;
         };
     }
   ]);
@@ -611,7 +628,7 @@
               $scope.tasks = $scope.tasks;
             });
         };
-
+        
         $scope.setCurrentTaskId = function (id) {
           taskService.currentTaskId = id;
           $rootScope.$emit("taskChanged");

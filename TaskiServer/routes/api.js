@@ -182,6 +182,36 @@ module.exports = function (passport) {
         });
     });
 
+    router.delete("/Task", function (req, res) {
+      var id = utility.resolvePath(req, "body.id"),
+          sessionId = utility.resolvePath(req, "query.sessionId");
+
+      if (!sessionId) {
+        res.status(400).json(missingSessionId);
+        return;
+      }
+
+      sql.getUserBySessionId(sessionId, function (error, user) {
+        if (error) {
+          res.status(500).json(error);
+          return;
+        }
+
+        sql.deleteTask({
+          "username": user && user.username,
+          "id": id
+        }, function (error, isDeleted) {
+          if (error) {
+            res.status(500).json(error);
+            return;
+          }
+
+          res.json(isDeleted);
+          return;
+        });
+      });
+    });
+
     router.post("/Task", function (req, res) {
       var body = req && req.body,
           description = body && body.description,

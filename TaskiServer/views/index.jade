@@ -31,18 +31,31 @@ html
     #myModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel" aria-hidden="true", ng-controller="task")
       .modal-dialog(role="document")
         .modal-content
-          .modal-body
+          .modal-header
             button.close(type="button", data-dismiss="modal", aria-hidden="true") x
-            h3#myModalLabel {{title}}
-            h5 Description
-             span(style="text-decoration: underline;", ng-click="isEditing = true", ng-show="!isEditing") Edit
-            p(ng-show="!isEditing") {{description}}
-            div(ng-show="isEditing")
-              textarea.form-control(ng-model="description", rows="3")
-              button.btn.btn-success(ng-click="update()") Save
-              button.btn.btn-link(ng-click="isEditing = false") close
-           div
-          .modal-footer
+            h3#myModalLabel(ng-show="!isEditingTitle", ng-click="startEditingTitle()") {{title}}
+            .edit-title(ng-show="isEditingTitle")
+              input.form-control(type="text", ng-model="newTitle")
+              button.btn.btn-success(ng-click="saveNewTitle()") Save
+              button.btn.btn-link(ng-click="setOldTitle()") close
+          .modal-body
+            .container-fluid
+              .delete-group(ng-show="showDeletePrompt")
+                .alert.alert-danger(role="alert") Are you sure you want to delete this task?
+                button.btn.btn-danger(data-dismiss="modal") Yes
+                button.btn.btn-default(ng-click="showDeletePrompt = false") No
+              .row.task-group(ng-show="!showDeletePrompt")
+                .col-xs-9.col-md-8
+                  h5 Description
+                   span(style="text-decoration: underline;", ng-click="isEditingDescription = true", ng-show="!isEditingDescription") Edit
+                  p(ng-show="!isEditingDescription") {{description}}
+                  div(ng-show="isEditingDescription")
+                    textarea.form-control(ng-model="description", rows="3")
+                    button.btn.btn-success(ng-click="update()") Save
+                    button.btn.btn-link(ng-click="isEditingDescription = false") close
+                .col-xs-1.col-md4
+                  button.btn.btn-danger(type="button", data-toggle="popover", data-container="body", data-content="Some content" ng-click="showDeletePrompt = true") Delete Task
+          .modal-footer(ng-show="!showDeletePrompt")
             button.btn(data-dismiss="modal", aria-hidden="true") Close
-            button.btn.btn-primary Save changes
+            button.btn.btn-primary(ng-click="update()") Save changes
         

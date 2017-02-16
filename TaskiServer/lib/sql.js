@@ -205,6 +205,32 @@ module.exports = {
           }
         );
     },
+    "deleteTask": function (taskInfo, callback) {
+      var id = taskInfo && taskInfo.id,
+          username = taskInfo && taskInfo.username;
+
+      if (typeof callback !== "function") {
+        return;
+      }
+
+      if (!id || !username) {
+        callback(missingArguments);
+        return;
+      }
+
+      pool.query("DELETE FROM task where id = ? AND EXISTS " +
+        "(SELECT * FROM user WHERE task.userId = user.id AND username = ?)",
+        [id, username],
+        function (error, fields) {
+          if (error) {
+            callback(error);
+            return;
+          }
+
+          callback(null, fields && fileds.affectedRows && true || false);
+          return;
+        });
+    },
     "getSessions": function (username, callback) {
         if (typeof callback !== "function") {
           return;
