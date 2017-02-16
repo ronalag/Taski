@@ -1,26 +1,58 @@
 (function () {
   "use strict";
   var app = angular.module("Taski", ["ngRoute"]),
-      promise,
+      promise;
 
-      resolvePath = function (obj, path) {
-        var array = typeof path === "string" && path.split(".") || null,
-            i,
-            length = array && array.length || 0;
+      app.service("utilityService", [
+        function () {
+          return {
+            constructUrl: function (param) {
+              var parameters = param && param.parameters,
+                  queryString = "?",
+                  url = param && param.url,
 
-        for(i = 0; obj && i < length; i++) {
-          obj = obj[array[i]];
-        }
+                  isUndefined = function (value) {
+                    return typeof value === "undefined";
+                  };
 
-        return obj;
-      };
+              if (!Array.isArray(parameters) || typeof url !== "string") {
+                return null;
+              }
+
+              parameters.forEach(function (parameter) {
+                var key = parameter && parameter.key,
+                    value = parameter && parameter.value;
+
+                if ([key, value].some(isUndefined)) {
+                  return;
+                }
+
+                queryString += key + "=" + encodeURIComponent(value);
+              });
+
+              return url + queryString;
+            },
+            resolvePath: function (obj, path) {
+              var array = typeof path === "string" && path.split(".") || null,
+                  i,
+                  length = array && array.length || 0;
+
+              for(i = 0; obj && i < length; i++) {
+                obj = obj[array[i]];
+              }
+
+              return obj;
+            }
+          };
+      }]);
 
   app.service("sessionService", [
     "$http",
     "$location",
     "$q",
     "$rootScope",
-    function($http, $location, $q, $rootScope) {
+    "utilityService",
+    function($http, $location, $q, $rootScope, utilityService) {
       var callbackInfos = [],
           ignoreClicks = false,
           that = {
@@ -31,8 +63,13 @@
               if (sessionId) {
                 $http({
                     "method": "GET",
-                    "url": "/API/Session/isValid?sessionId=" +
-                      encodeURIComponent(sessionId)
+                    "url": utilityService.constructUrl({
+                      "url": "/API/Session/isValid",
+                      "parameters": [{
+                        "key": "sessionId",
+                        "value": sessionId
+                      }]
+                    })
                   })
                   .then(function (response) {
                       var isValid = response && response.data &&
@@ -104,11 +141,19 @@
 
               $http({
                   "method": "DELETE",
-                  "url": "/API/session?sessionId=" +
-                    encodeURIComponent(sessionId),
+                  "url": utilityService.constructUrl({
+                    "url": "/API/session",
+                    "parameters": [{
+                      "key": "sessionId",
+                      "value": sessionId
+                    }]
+                  })
                 })
                 .then(function (response) {
-                  var isDeleted = resolvePath(response, "data.isDeleted"),
+                  var isDeleted = utilityService.resolvePath(
+                        response,
+                        "data.isDeleted"
+                      ),
 
                       deleteContext = function () {
 
@@ -167,8 +212,13 @@
 
                 $http({
                     "method": "GET",
-                    "url": "/API/Session/isValid?sessionId=" +
-                      encodeURIComponent(sessionId)
+                    "url": utilityService.constructUrl({
+                      "url": "/API/Session/isValid",
+                      "parameters": [{
+                        "key": "sessionId",
+                        "value": sessionId
+                      }]
+                    })
                   })
                   .then(function (response) {
                       var isValid = response && response.data &&
@@ -243,7 +293,8 @@
   app.service("taskService", [
     "$http",
     "$q",
-    function ($http, $q) {
+    "utilityService",
+    function ($http, $q, utilityService) {
       var cache = {};
 
       return {
@@ -258,7 +309,13 @@
 
           $http({
               "method": "GET",
-              "url": "/API/tasks?sessionId=" + encodeURIComponent(sessionId)
+              "url": utilityService.constructUrl({
+                "url": "/API/tasks",
+                "parameters": [{
+                  "key": "sessionId",
+                  "value": sessionId
+                }]
+              })
             })
             .success(function (tasks) {
               cache.tasks = tasks;
@@ -305,8 +362,12 @@
   app.controller("home", [
     "$location",
     "$scope",
-    function ($location, $scope) {
-      var sessionId = resolvePath(ronalag, "taski.context.sessionId");
+    "utilityService",
+    function ($location, $scope, utilityService) {
+      var sessionId = utilityService.resolvePath(
+            ronalag,
+            "taski.context.sessionId"
+          );
 
       if (sessionId && $location) {
         $location.url("/tasks");
@@ -319,7 +380,8 @@
     "$rootScope",
     "$scope",
     "sessionService",
-    function ($location, $rootScope, $scope, sessionService) {
+    "utilityService",
+    function ($location, $rootScope, $scope, sessionService, utilityService) {
 
       $scope.isValidPassword = true;
 
@@ -330,7 +392,10 @@
             "password": $scope.password
           })
           .then(function (response) {
-            var sessionId = resolvePath (response, "data.sessionId");
+            var sessionId = utilityService.resolvePath (
+                  response,
+                  "data.sessionId"
+                );
 
             if (!sessionId) {
               return;
@@ -418,10 +483,12 @@
     }]);
 
   app.controller("task", [
+    "$http",
     "$rootScope",
     "$scope",
     "taskService",
-    function ($rootScope, $scope, taskService) {
+    "utilityService",
+    function ($http, $rootScope, $scope, taskService, utilityService) {
         var onShow = function () {
           var id = taskService.currentTaskId,
               task,
@@ -438,6 +505,7 @@
             return;
           }
 
+          $scope.id = id;
           $scope.title = task.title;
           $scope.description = task.description || "";
         };
@@ -447,6 +515,45 @@
 
         $scope.isEditing = $scope.isEditing || false;
         onShow();
+
+        $scope.update = function () {
+          var id =  $scope.id,
+              sessionId = ronalag.taski.context.sessionId;
+
+          if (!id) {
+            return;
+          }
+
+          $http({
+            "method": "PUT",
+            "url": utilityService.constructUrl({
+              "url": "/API/task",
+              "parameters": [{
+                "key": "sessionId",
+                "value": sessionId
+              }]
+            }),
+            "data": {
+              "id": id,
+              "description": $scope.description,
+              "title": $scope.title
+            }
+          })
+          .then(function (response) {
+            var isUpdated = utilityService.resolvePath(
+              response,
+              "data.isUpdated"
+            );
+
+            if (isUpdated) {
+              return;
+            }
+            console.log("error updating task");
+            console.log(response);
+          }, function (error) {
+            console.log(error);
+          })
+        };
     }
   ]);
 
@@ -484,8 +591,6 @@
 
         promise && promise.then(getTasks) || getTasks();
 
-        $scope.tasks = $scope.tasks || [];
-
         $scope.create = function () {
           var sessionId = ronalag.taski.context.sessionId,
               title = $scope.title;
@@ -511,6 +616,8 @@
           taskService.currentTaskId = id;
           $rootScope.$emit("taskChanged");
         };
+
+        $scope.tasks = $scope.tasks || [];
       }]);
 
   app.run([

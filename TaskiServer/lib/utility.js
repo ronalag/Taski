@@ -28,6 +28,17 @@ module.exports = {
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
             s4() + '-' + s4() + s4() + s4();
     },
+    "execFunc": function (param) {
+      var args = param && param.args,
+          context = param && param.context || this,
+          func = param && param.func;
+
+      if (typeof func !== "function" || !Array.isArray(args)) {
+        return;
+      }
+
+      func.apply(context, args);
+    },
     "resolvePath": function (obj, path) {
         var arr = typeof path === "string" && path.split("."),
             i,

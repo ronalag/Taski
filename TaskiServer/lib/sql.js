@@ -22,6 +22,10 @@ var bcrypt = require("bcrypt-nodejs"),
 module.exports = {
     "authenticate": function (username, password, callback) {
 
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!username || !password) {
             return callback(missingArguments);
         }
@@ -40,6 +44,10 @@ module.exports = {
     },
     "createSession": function (username, callback) {
         var id;
+
+        if (typeof callback !== "function") {
+          return;
+        }
 
         if (!username) {
             return callback(missingArguments);
@@ -70,6 +78,10 @@ module.exports = {
           isCompleted = obj && obj.isCompleted || false,
           title = obj && obj.title || null,
           username = obj && obj.username;          ;
+
+      if (typeof callback !== "function") {
+        return;
+      }
 
       if (!username) {
         return callback(missingArguments);
@@ -114,6 +126,10 @@ module.exports = {
           password = obj && obj.password,
           self = this,
           username = obj && obj.username;
+
+      if (typeof callback !== "function") {
+        return;
+      }
 
       if (!email || !firstName || !lastName || !password || !username) {
         return callback(missingArguments);
@@ -163,6 +179,10 @@ module.exports = {
         }
     },
     "deleteSession": function (sessionId, callback) {
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!sessionId) {
           return callback(missingArguments);
         }
@@ -186,6 +206,10 @@ module.exports = {
         );
     },
     "getSessions": function (username, callback) {
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!username) {
             return callback(missingArguments);
         }
@@ -201,6 +225,10 @@ module.exports = {
             });
     },
     "getTasks": function (username, callback) {
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!username) {
             return callback(missingArguments);
         }
@@ -221,6 +249,10 @@ module.exports = {
           }
     },
     "getUser": function (username, callback) {
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!username) {
             callback(missingArguments);
             return;
@@ -240,6 +272,10 @@ module.exports = {
           }
     },
     "getUserBySessionId": function (sessionId, callback) {
+        if (typeof callback !== "function") {
+          return;
+        }
+
         if (!sessionId) {
           return callback(missingArguments);
         }
@@ -254,5 +290,43 @@ module.exports = {
 
             callback(null, results && results[0]);
           });
+    },
+    "updateTask": function (task, callback) {
+        var description = task && task.description,
+            dueDate = task && task.dueDate,
+            id = task && task.id,
+            isAllDayEvent = task && task.isAllDayEvent,
+            isCompleted = task && task.isCompleted,
+            title = task && task.title;
+
+        if (typeof callback !== "function") {
+          return;
+        }
+
+        if (!id) {
+          callback(missingArguments);
+          return;
+        }
+
+        pool.query("UPDATE task SET description = ?, dueDate = ?, " +
+          "isAllDayEvent = ?, isCompleted = ?, title = ? WHERE id = ?",
+          [
+            description,
+            dueDate,
+            isAllDayEvent,
+            isCompleted,
+            title,
+            id
+          ], function (error, fields) {
+            if (error) {
+              callback(error);
+              return;
+            }
+
+            callback(null, {
+              "hasDataChanged": fields && fields.changedRows && true || false,
+              "isUpdated": fields && fields.affectedRows && true || false,
+            });
+          })
     }
   };

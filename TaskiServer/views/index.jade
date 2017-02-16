@@ -24,7 +24,7 @@ html
                       span.caret
                   ul.dropdown-menu
                     li
-                      a(href="#", ng-click="logout()") Sign outs
+                      a(href="#", ng-click="logout()") Sign out
       .row
         .col-md-12
         div(data-ng-view="")
@@ -39,7 +39,7 @@ html
             p(ng-show="!isEditing") {{description}}
             div(ng-show="isEditing")
               textarea.form-control(ng-model="description", rows="3")
-              button.btn.btn-success Save
+              button.btn.btn-success(ng-click="update()") Save
               button.btn.btn-link(ng-click="isEditing = false") close
            div
           .modal-footer

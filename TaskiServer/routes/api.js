@@ -147,7 +147,7 @@ module.exports = function (passport) {
             if (newUser) {
               delete newUser.password;
             }
-            
+
             return res.json(newUser);
         });
       });
@@ -223,6 +223,40 @@ module.exports = function (passport) {
 
           return res.json(task);
         });
+      });
+    });
+
+    router.put("/Task", function (req, res) {
+      var body = req && req.body,
+          sessionId = utility.resolvePath(req, "query.sessionId"),
+          task = utility.cloneProperties({
+            "object": body,
+            "properties": [
+              "id",
+              "description",
+              "dueDate",
+              "isAllDayeEvent",
+              "isCompleted",
+              "title"
+            ]
+          });
+
+      sql.getUserBySessionId(sessionId, function (error, user) {
+          if (error) {
+            res.status(500).json(error);
+            return;
+          }
+
+          task.username = user && user.username;
+
+          sql.updateTask(task, function (error, updateInfo) {
+            if (error) {
+              res.status(500).json(error);
+              return;
+            }
+
+            res.json(updateInfo);
+          });
       });
     });
 
