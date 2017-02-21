@@ -183,8 +183,11 @@ module.exports = function (passport) {
     });
 
     router.delete("/Task", function (req, res) {
-      var id = utility.resolvePath(req, "body.id"),
+      var id,
+          query = req && req.query,
           sessionId = utility.resolvePath(req, "query.sessionId");
+
+      id = query && query.taskId;
 
       if (!sessionId) {
         res.status(400).json(missingSessionId);
@@ -206,7 +209,10 @@ module.exports = function (passport) {
             return;
           }
 
-          res.json(isDeleted);
+          res.json({
+            "isDeleted": isDeleted
+          });
+          
           return;
         });
       });

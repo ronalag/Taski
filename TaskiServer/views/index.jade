@@ -32,7 +32,6 @@ html
       .modal-dialog(role="document")
         .modal-content
           .modal-header
-            button.close(type="button", data-dismiss="modal", aria-hidden="true") x
             h3#myModalLabel(ng-show="!isEditingTitle", ng-click="startEditingTitle()") {{title}}
             .edit-title(ng-show="isEditingTitle")
               input.form-control(type="text", ng-model="newTitle")
@@ -42,7 +41,7 @@ html
             .container-fluid
               .delete-group(ng-show="showDeletePrompt")
                 .alert.alert-danger(role="alert") Are you sure you want to delete this task?
-                button.btn.btn-danger(data-dismiss="modal") Yes
+                button.btn.btn-danger(data-dismiss="modal", ng-click="delete()") Yes
                 button.btn.btn-default(ng-click="showDeletePrompt = false") No
               .row.task-group(ng-show="!showDeletePrompt")
                 .col-xs-9.col-md-8
@@ -57,5 +56,4 @@ html
                   button.btn.btn-danger(type="button", data-toggle="popover", data-container="body", data-content="Some content" ng-click="showDeletePrompt = true") Delete Task
           .modal-footer(ng-show="!showDeletePrompt")
             button.btn(data-dismiss="modal", aria-hidden="true") Close
-            button.btn.btn-primary(ng-click="update()") Save changes
         

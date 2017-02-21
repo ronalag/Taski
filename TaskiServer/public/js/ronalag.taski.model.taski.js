@@ -8,7 +8,7 @@
           return {
             constructUrl: function (param) {
               var parameters = param && param.parameters,
-                  queryString = "?",
+                  queryString = "",
                   url = param && param.url,
 
                   isUndefined = function (value) {
@@ -19,7 +19,7 @@
                 return null;
               }
 
-              parameters.forEach(function (parameter) {
+              parameters.forEach(function (parameter,  index) {
                 var key = parameter && parameter.key,
                     value = parameter && parameter.value;
 
@@ -27,6 +27,7 @@
                   return;
                 }
 
+                queryString += index ? "&" : "?";
                 queryString += key + "=" + encodeURIComponent(value);
               });
 
@@ -298,6 +299,68 @@
       var cache = {};
 
       return {
+        deleteTask: function (id) {
+          var deferred = $q.defer(),
+              sessionId = ronalag.taski.context.sessionId;
+
+          if (!id || !sessionId) {
+              deferred.reject("Missing arguments!");
+              return deferred.promise;
+          }
+
+          $http({
+              "method": "DELETE",
+              "url": utilityService.constructUrl({
+                "url": "/API/task",
+                "parameters": [{
+                  "key": "sessionId",
+                  "value": sessionId
+                }, {
+                  "key": "taskId",
+                  "value": id
+                }]
+              })
+            })
+            .then(function (response) {
+              var index,
+                  isDeleted = utilityService.resolvePath(
+                    response,
+                    "data.isDeleted"
+                  ),
+                  tasks = cache && cache.tasks;
+
+              if (!isDeleted) {
+                console.log("task with id: " + id + " was not deleted.");
+                console.log({
+                  "response": response
+                });
+                return;
+              }
+
+              Array.isArray (tasks) && tasks.some(function (task, i) {
+                if (task.id !== id) {
+                  return false;
+                }
+
+                index = i;
+                return true;
+              });
+
+              if (typeof index !== "number") {
+                return;
+              }
+
+              tasks.splice(index, 1);
+            }, function (error, status) {
+              console.log({
+                "error": error,
+                "status": status
+              });
+            });
+        },
+        getCachedTasks: function () {
+          return cache.tasks;
+        },
         getTasks: function (sessionId, callback) {
           if (!sessionId) {
             return callback("Missing session Id");
@@ -329,8 +392,64 @@
         reset: function () {
           delete cache.tasks;
         },
-        getCachedTasks: function () {
-          return cache.tasks;
+        updateTask: function (param) {
+            var deferred = $q.defer(),
+                description = param && param.description,
+                id = param && param.id,
+                sessionId = ronalag.taski.context.sessionId,
+                title = param && param.title;
+
+            if (!id) {
+              deferred.reject("Id missing from arguments!");
+              return deferred.promise;
+            }
+
+            $http({
+              "method": "PUT",
+              "url": utilityService.constructUrl({
+                "url": "/API/task",
+                "parameters": [{
+                  "key": "sessionId",
+                  "value": sessionId
+                }]
+              }),
+              "data": {
+                "id": id,
+                "description": description,
+                "title": title
+              }
+            })
+            .then(function (response) {
+              var isUpdated = utilityService.resolvePath(
+                response,
+                "data.isUpdated"
+              );
+
+              deferred.resolve(isUpdated);
+
+              if (!isUpdated) {
+                console.log("error updating task");
+                console.log(response);
+                return;
+              }
+
+              cache.tasks.some(function (task) {
+                if (task.id !== id) {
+                  return false;
+                }
+
+                task.description = description;
+                task.title = title;
+
+                return true;
+              });
+            }, function (error) {
+
+              deferred.reject(error);
+              console.log(error);
+            });
+
+            return deferred.promise;
         },
         currentTaskId: null
       };
@@ -508,10 +627,16 @@
           $scope.id = id;
           $scope.title = task.title;
           $scope.description = task.description || "";
+          $scope.showDeletePrompt = false;
         };
+
         $rootScope.$on("taskChanged", function (e) {
           onShow();
         });
+
+        $scope.delete = function () {
+          taskService.deleteTask($scope.id);
+        };
 
         $scope.isEditing = $scope.isEditing || false;
 
@@ -519,42 +644,11 @@
         onShow();
 
         $scope.update = function () {
-          var id =  $scope.id,
-              sessionId = ronalag.taski.context.sessionId;
-
-          if (!id) {
-            return;
-          }
-
-          $http({
-            "method": "PUT",
-            "url": utilityService.constructUrl({
-              "url": "/API/task",
-              "parameters": [{
-                "key": "sessionId",
-                "value": sessionId
-              }]
-            }),
-            "data": {
-              "id": id,
-              "description": $scope.description,
-              "title": $scope.title
-            }
-          })
-          .then(function (response) {
-            var isUpdated = utilityService.resolvePath(
-              response,
-              "data.isUpdated "
-            );
-
-            if (isUpdated) {
-              return;
-            }
-            console.log("error updating task");
-            console.log(response);
-          }, function (error) {
-            console.log(error);
-          })
+          taskService.updateTask({
+            "id": $scope.id,
+            "description": $scope.description,
+            "title": $scope.title
+          });
         };
 
         $scope.saveNewTitle = function () {
@@ -581,13 +675,15 @@
     "$location",
     "sessionService",
     "taskService",
+    "utilityService",
     function (
       $rootScope,
       $scope,
       $http,
       $location,
       sessionService,
-      taskService) {
+      taskService,
+      utilityService) {
         var getTasks = function () {
             var sessionId = ronalag.taski.context.sessionId;
 
@@ -618,7 +714,13 @@
 
           $http({
               "method": "POST",
-              "url": "/API/task?sessionId=" + encodeURIComponent(sessionId),
+              "url": utilityService.constructUrl({
+                "url": "/API/task",
+                "parameters": [{
+                  "key": "sessionId",
+                  "value": sessionId
+                }]
+              }),
               "data": {
                 "title": title
               }
@@ -628,7 +730,7 @@
               $scope.tasks = $scope.tasks;
             });
         };
-        
+
         $scope.setCurrentTaskId = function (id) {
           taskService.currentTaskId = id;
           $rootScope.$emit("taskChanged");

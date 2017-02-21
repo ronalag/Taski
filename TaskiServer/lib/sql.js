@@ -227,7 +227,7 @@ module.exports = {
             return;
           }
 
-          callback(null, fields && fileds.affectedRows && true || false);
+          callback(null, fields && fields.affectedRows && true || false);
           return;
         });
     },
