@@ -1,3 +1,5 @@
-﻿# TaskiServer
+﻿# Taski
+
+A task management application.
 
 
