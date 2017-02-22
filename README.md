@@ -4,6 +4,7 @@ A task management application.
 
 ## Dependencies
 
+* Git
 * NodeJS
 * NPM
 * MySQL
