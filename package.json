@@ -1,0 +1,35 @@
+{
+  "name": "taski-server",
+  "version": "0.0.0",
+  "description": "TaskiServer",
+  "main": "app.js",
+  "author": {
+    "name": "henrya",
+    "email": "henry.aghaulor@gmail.com"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.15.1",
+    "bower": "^1.7.9",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.7.1",
+    "datetime-converter-nodejs": "^0.1.3",
+    "easy-datetime": "0.0.5",
+    "express": "^4.13.4",
+    "express-session": "^1.14.0",
+    "jade": "^1.11.0",
+    "moment": "^2.14.1",
+    "mysql": "^2.11.1",
+    "node-mysql": "^0.4.2",
+    "node-uuid": "^1.4.7",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport-localapikey": "0.0.3",
+    "q": "^1.4.1",
+    "url": "^0.11.0"
+  },
+  "scripts": {
+    "createDB": "node ./build/create-db.js"
+  }
+}

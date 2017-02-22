@@ -1,0 +1,8 @@
+.col-md-12(ng-controller="tasks")
+  form.form-inline
+    .form-group
+      label(for="title") Title
+      input.form-control#title(type="text", placeholder="title" ng-model="title")
+    button.btn.btn-group(type="submit", ng-click="create()") Add Task
+  .list-group(style="margin-top: 18px;")
+    a.list-group-item(href="#myModal", ng-repeat="task in tasks", data-toggle="modal" ng-click="setCurrentTaskId(task.id)") {{task.title}}
