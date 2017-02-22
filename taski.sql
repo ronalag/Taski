@@ -19,8 +19,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `Taski`
 --
-CREATE DATABASE IF NOT EXISTS `aski` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `aski`;
+CREATE DATABASE IF NOT EXISTS `Taski` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+USE `Taski`;
 
 -- --------------------------------------------------------
 
