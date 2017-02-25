@@ -36,7 +36,7 @@ html
             .edit-title(ng-show="isEditingTitle")
               input.form-control(type="text", ng-model="newTitle")
               button.btn.btn-success(ng-click="saveNewTitle()") Save
-              button.btn.btn-link(ng-click="setOldTitle()") close
+              button.btn.btn-link(ng-click="isEditingTitle = false") close
           .modal-body
             .container-fluid
               .delete-group(ng-show="showDeletePrompt")
@@ -46,11 +46,11 @@ html
               .row.task-group(ng-show="!showDeletePrompt")
                 .col-xs-9.col-md-8
                   h5 Description
-                   span(style="text-decoration: underline;", ng-click="isEditingDescription = true", ng-show="!isEditingDescription") Edit
+                   span(style="text-decoration: underline;", ng-click="startEditingDescription()", ng-show="!isEditingDescription") Edit
                   p(ng-show="!isEditingDescription") {{description}}
                   div(ng-show="isEditingDescription")
-                    textarea.form-control(ng-model="description", rows="3")
-                    button.btn.btn-success(ng-click="update()") Save
+                    textarea.form-control(ng-model="newDescription", rows="3")
+                    button.btn.btn-success(ng-click="saveDescription()") Save
                     button.btn.btn-link(ng-click="isEditingDescription = false") close
                 .col-xs-1.col-md4
                   button.btn.btn-danger(type="button", data-toggle="popover", data-container="body", data-content="Some content" ng-click="showDeletePrompt = true") Delete Task

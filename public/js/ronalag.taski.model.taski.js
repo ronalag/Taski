@@ -634,14 +634,14 @@
           onShow();
         });
 
+        $scope.isEditing = $scope.isEditing || false;
+        $scope.isEditingTitle = $scope.isEditingTitle || false;
+        onShow();
+
+
         $scope.delete = function () {
           taskService.deleteTask($scope.id);
         };
-
-        $scope.isEditing = $scope.isEditing || false;
-
-        $scope.isEditingTitle = $scope.isEditingTitle || false;
-        onShow();
 
         $scope.update = function () {
           taskService.updateTask({
@@ -651,14 +651,21 @@
           });
         };
 
+        $scope.saveDescription = function () {
+          $scope.description = $scope.newDescription;
+          $scope.isEditingDescription = false;
+          $scope.update();
+        };
+
         $scope.saveNewTitle = function () {
           $scope.isEditingTitle = false;
           $scope.title = $scope.newTitle;
           $scope.update();
-        }
+        };
 
-        $scope.setOldTitle = function () {
-          $scope.isEditingTitle = false;
+        $scope.startEditingDescription = function () {
+          $scope.isEditingDescription = false;
+          $scope.newDescription = $scope.description;
         };
 
         $scope.startEditingTitle = function () {
