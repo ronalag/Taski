@@ -1,23 +1,25 @@
-﻿# Taski
+# Taski
 
 A task management application.
 
 ## Dependencies
 
-* Git
+* Curl
+* Unzip
 * NodeJS
 * NPM
 * MySQL
 
-## Setup and build
+## Setup, build and run application
 
 Create a config.js file based on the config.js.example file in the base directory. It contains fields for connecting to MySQL and hashing passwords. When you are done run the following commands in a terminal:
 
-``` 
-git clone git@github.com:ronalag/Taski.git
-cd Taski
+```
+curl -LOk https://github.com/ronalag/Taski/archive/master.zip
+unzip master.zip
+cd Taski-master
 npm install
-npm script createDB 
+npm script createDB
 node app.js
 ```
 

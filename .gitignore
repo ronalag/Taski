@@ -4,3 +4,4 @@ config.js
 nodemon.json
 data.sql
 node_modules/
+npm-debug.log
