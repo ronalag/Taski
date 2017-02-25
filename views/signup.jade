@@ -2,26 +2,33 @@
   .jumbotron
     h1 Taski
     // p.bg-danger(ng-hide="isValidPassword") Invalid username and/or password
-    form
+    form(name="signUpForm")
       .form-group
         label(for="username") Username
-        input.form-control#username(type="text", placeholder="username", ng-model="username")
+        input.form-control#username(type="text", placeholder="username", ng-model="username", required="", name="username")
+      .alert.alert-danger(ng-show="signUpForm.username.$touched && signUpForm.username.$invalid") Please enter a valid username.
       .form-group
         label(for="password") Password
-        input.form-control#password(type="password", placeholder="password", ng-model="password")
+        input.form-control#password(type="password", placeholder="password", ng-model="password", required="", name="password", ng-minlength="8")
+      .alert.alert-danger(ng-show="signUpForm.password.$touched && signUpForm.password.$error.required") Please enter a valid password.
+      .alert.alert-danger(ng-show="signUpForm.password.$touched && signUpForm.password.$error.minlength") The password must have at least 8 characters.      
       .form-group
         label(for="password") Repeat Password
-        input.form-control#repeatPassword(type="password", placeholder="password", ng-model="repeatPassword")
+        input.form-control#repeatPassword(type="password", placeholder="password", ng-model="repeatPassword", required="",  name="repeatPassword")
+      .alert.alert-danger(ng-show="password !== repeatPassword") Passwords must match.
       .form-group
         label(for="firstName") First Name
-        input.form-control#firstName(type="text", placeholder="firstName", ng-model="firstName")
+        input.form-control#firstName(type="text", placeholder="firstName", ng-model="firstName", required="", name="firstName")
+      .alert.alert-danger(ng-show="signUpForm.firstname.$touched && signupForm.firstName.$invalid") First name is required.
       .form-group
         label(for="lastName") Last Name
-        input.form-control#lastName(type="text", placeholder="lastName", ng-model="lastName")
+        input.form-control#lastName(type="text", placeholder="lastName", ng-model="lastName", required="", name="lastName")
+      .alert.alert-danger(ng-show="password !== repeatPassword") Email is required.
       .form-group
         label(for="email") Email
-        input.form-control#email(type="text", placeholder="email", ng-model="email")
-      
+        input.form-control#email(type="email", placeholder="email", ng-model="email", required="", name="email")
+      .alert.alert-danger(ng-show="signUpForm.email.$touched && signUpForm.email.$invalid") A valid email is required.
+        
     .btn-group(role="group")
       span
         a.btn.btn-primary.btn-lg( role="button" ng-click="signup()") Sign Up

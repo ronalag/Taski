@@ -20,7 +20,7 @@ unzip master.zip
 cd Taski-master
 npm install
 npm script createDB
-npm start
+node app.js
 ```
 
 Then navigate to http://localhost:3000 on your local machine, sign up for an account then you can use the credentials to login.

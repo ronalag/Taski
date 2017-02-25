@@ -3,50 +3,6 @@
   var app = angular.module("Taski", ["ngRoute"]),
       promise;
 
-      app.service("utilityService", [
-        function () {
-          return {
-            constructUrl: function (param) {
-              var parameters = param && param.parameters,
-                  queryString = "",
-                  url = param && param.url,
-
-                  isUndefined = function (value) {
-                    return typeof value === "undefined";
-                  };
-
-              if (!Array.isArray(parameters) || typeof url !== "string") {
-                return null;
-              }
-
-              parameters.forEach(function (parameter,  index) {
-                var key = parameter && parameter.key,
-                    value = parameter && parameter.value;
-
-                if ([key, value].some(isUndefined)) {
-                  return;
-                }
-
-                queryString += index ? "&" : "?";
-                queryString += key + "=" + encodeURIComponent(value);
-              });
-
-              return url + queryString;
-            },
-            resolvePath: function (obj, path) {
-              var array = typeof path === "string" && path.split(".") || null,
-                  i,
-                  length = array && array.length || 0;
-
-              for(i = 0; obj && i < length; i++) {
-                obj = obj[array[i]];
-              }
-
-              return obj;
-            }
-          };
-      }]);
-
   app.service("sessionService", [
     "$http",
     "$location",
@@ -455,6 +411,51 @@
       };
     }]);
 
+
+          app.service("utilityService", [
+            function () {
+              return {
+                constructUrl: function (param) {
+                  var parameters = param && param.parameters,
+                      queryString = "",
+                      url = param && param.url,
+
+                      isUndefined = function (value) {
+                        return typeof value === "undefined";
+                      };
+
+                  if (!Array.isArray(parameters) || typeof url !== "string") {
+                    return null;
+                  }
+
+                  parameters.forEach(function (parameter,  index) {
+                    var key = parameter && parameter.key,
+                        value = parameter && parameter.value;
+
+                    if ([key, value].some(isUndefined)) {
+                      return;
+                    }
+
+                    queryString += index ? "&" : "?";
+                    queryString += key + "=" + encodeURIComponent(value);
+                  });
+
+                  return url + queryString;
+                },
+                resolvePath: function (obj, path) {
+                  var array = typeof path === "string" && path.split(".") || null,
+                      i,
+                      length = array && array.length || 0;
+
+                  for(i = 0; obj && i < length; i++) {
+                    obj = obj[array[i]];
+                  }
+
+                  return obj;
+                }
+              };
+          }]);
+
   app.config([
     "$locationProvider",
     "$routeProvider",
@@ -572,12 +573,29 @@
     "$location",
     "$scope",
     function ($http, $location, $scope) {
+      $scope.passwordPattern =
+        "(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/)";
+
+      $scope.isUsernameTaken = function () {
+          $http({
+            "method": "GET",
+            "url": utilityService.constructUrl({
+              "url": "/API/isUsernameTaken",
+              "parameters": [{
+                "key": sessionId
+              }]
+            }),
+
+          })
+      };
+
       $scope.signup = function () {
         if (!$scope.username || !$scope.password ||
               !$scope.repeatPassword || !$scope.firstName ||
               !$scope.lastName || !$scope.email ||
-              $scope.password !== $scope.repeatPassword) {
-                return;
+              $scope.password !== $scope.repeatPassword ||
+              $scope.password.length < 8) {
+            return;
         }
 
         $http({
